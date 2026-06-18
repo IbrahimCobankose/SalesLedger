@@ -1,0 +1,72 @@
+Mevcut Dizin: C:\Users\İbrahim\Desktop\Satış Defteri\SalesLedger
+
+├── .env
+├── create_tree.py
+├── file_tree.txt
+└── lib/
+    ├── app.dart
+    ├── core/
+    │   ├── constants/
+    │   │   └── color_constants.dart
+    │   ├── l10n/
+    │   ├── network/
+    │   │   └── supabase_client.dart
+    │   ├── theme/
+    │   │   ├── app_theme.dart
+    │   │   └── text_styles.dart
+    │   ├── utils/
+    │   │   └── excel_exporter.dart
+    │   └── widgets/
+    │       ├── confirm_dialog.dart
+    │       ├── custom_button.dart
+    │       └── custom_snackbar.dart
+    ├── features/
+    │   ├── auth/
+    │   │   ├── data/
+    │   │   ├── domain/
+    │   │   └── presentation/
+    │   │       ├── pages/
+    │   │       │   ├── add_profile_page.dart
+    │   │       │   ├── login_page.dart
+    │   │       │   ├── profile_selection_page.dart
+    │   │       │   └── register_page.dart
+    │   │       └── widgets/
+    │   ├── finance/
+    │   │   ├── data/
+    │   │   ├── domain/
+    │   │   └── presentation/
+    │   │       ├── pages/
+    │   │       │   ├── cash_flow_page.dart
+    │   │       │   └── finance_and_stats_page.dart
+    │   │       └── widgets/
+    │   │           ├── stat_chart.dart
+    │   │           └── summary_card.dart
+    │   ├── inventory/
+    │   │   ├── data/
+    │   │   ├── domain/
+    │   │   └── presentation/
+    │   │       ├── pages/
+    │   │       │   ├── add_product_page.dart
+    │   │       │   ├── inventory_page.dart
+    │   │       │   └── product_details_page.dart
+    │   │       └── widgets/
+    │   ├── purchases/
+    │   │   ├── data/
+    │   │   ├── domain/
+    │   │   └── presentation/
+    │   │       ├── pages/
+    │   │       │   ├── add_purchase_page.dart
+    │   │       │   ├── purchase_details_page.dart
+    │   │       │   └── purchases_page.dart
+    │   │       └── widgets/
+    │   └── sales/
+    │       ├── data/
+    │       ├── domain/
+    │       └── presentation/
+    │           ├── pages/
+    │           │   ├── add_sale_page.dart
+    │           │   ├── sale_details_page.dart
+    │           │   └── sales_page.dart
+    │           └── widgets/
+    │               └── cargo_status_badge.dart
+    └── main.dart
