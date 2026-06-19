@@ -46,3 +46,12 @@ app.*.map.json
 
 # Supabase ve ortam değişkenleri
 .env
+
+ 
+# Flutter / Dart build
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+ 
