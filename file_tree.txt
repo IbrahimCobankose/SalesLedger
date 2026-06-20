@@ -1,6 +1,7 @@
 Mevcut Dizin: C:\Users\İbrahim\Desktop\Satış Defteri\sales_ledger
 
 ├── .env
+├── .flutter-plugins-dependencies
 ├── .gitignore
 ├── .metadata
 ├── README.md
@@ -265,6 +266,8 @@ Mevcut Dizin: C:\Users\İbrahim\Desktop\Satış Defteri\sales_ledger
     ├── CMakeLists.txt
     ├── flutter/
     │   ├── CMakeLists.txt
+    │   ├── ephemeral/
+    │   │   └── .plugin_symlinks/
     │   ├── generated_plugin_registrant.cc
     │   ├── generated_plugin_registrant.h
     │   └── generated_plugins.cmake
