@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sales_ledger/core/network/secure_session_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Supabase istemcisini başlatır.
@@ -24,6 +25,9 @@ Future<void> initSupabase() async {
     url: url!,
     anonKey: anonKey!,
     debug: kDebugMode, // Sadece debug modda Supabase loglarını göster
+    authOptions: FlutterAuthClientOptions(
+      localStorage: SecureSessionStorage(),
+    ),
   );
 }
 
