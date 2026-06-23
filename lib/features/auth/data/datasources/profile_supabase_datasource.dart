@@ -65,10 +65,36 @@ class ProfileSupabaseDatasource implements ProfileDatasource {
     required Uint8List bytes,
     required String fileExtension,
   }) async {
-    final path = '$userId/${DateTime.now().microsecondsSinceEpoch}.$fileExtension';
+    final ext = fileExtension.toLowerCase();
+    final contentType = _mimeType(ext);
+    final path = '$userId/${DateTime.now().microsecondsSinceEpoch}.$ext';
 
-    await _client.storage.from(_avatarBucket).uploadBinary(path, bytes);
+    await _client.storage.from(_avatarBucket).uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(
+        contentType: contentType,
+        upsert: true,
+      ),
+    );
 
     return _client.storage.from(_avatarBucket).getPublicUrl(path);
+  }
+
+  /// Dosya uzantısından MIME türü üretir.
+  static String _mimeType(String ext) {
+    switch (ext) {
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      case 'heic':
+      case 'heif':
+        return 'image/heic';
+      default:
+        return 'image/jpeg';
+    }
   }
 }

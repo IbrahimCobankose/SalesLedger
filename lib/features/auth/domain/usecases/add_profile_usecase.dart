@@ -13,11 +13,13 @@ class AddProfileUseCase {
     required String name,
     String? role,
     Uint8List? avatarBytes,
+    String? avatarExtension,
   }) {
     return _repository.addProfile(
       name: name,
       role: role,
       avatarBytes: avatarBytes,
+      avatarExtension: avatarExtension,
     );
   }
 }

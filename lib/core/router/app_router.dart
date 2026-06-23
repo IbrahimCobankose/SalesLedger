@@ -5,6 +5,8 @@ import 'package:sales_ledger/core/widgets/app_shell.dart';
 import 'package:sales_ledger/features/auth/presentation/pages/add_profile_page.dart';
 import 'package:sales_ledger/features/auth/presentation/pages/login_page.dart';
 import 'package:sales_ledger/features/auth/presentation/pages/profile_selection_page.dart';
+import 'package:sales_ledger/features/auth/presentation/pages/email_verification_page.dart';
+import 'package:sales_ledger/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:sales_ledger/features/auth/presentation/pages/register_page.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
@@ -19,10 +21,13 @@ import 'package:sales_ledger/features/finance/presentation/pages/finance_and_sta
 import 'package:sales_ledger/features/sales/presentation/pages/add_sale_page.dart';
 import 'package:sales_ledger/features/sales/presentation/pages/sale_details_page.dart';
 import 'package:sales_ledger/features/sales/presentation/pages/sales_page.dart';
+import 'package:sales_ledger/features/settings/presentation/pages/settings_page.dart';
 
 abstract class AppRoutes {
   static const login = '/login';
   static const register = '/register';
+  static const emailVerification = '/email-verification';
+  static const forgotPassword = '/forgot-password';
   static const profileSelection = '/profiles';
   static const addProfile = '/profiles/add';
   static const inventory = '/inventory';
@@ -33,6 +38,7 @@ abstract class AppRoutes {
   static const addPurchase = '/purchases/add';
   static const addSale = '/sales/add';
   static const cashMovements = '/finance/movements';
+  static const settings = '/settings';
 
   static String productDetails(String id) => '/products/$id';
   static String purchaseDetails(String id) => '/purchase-details/$id';
@@ -59,7 +65,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final hasSelectedProfile = ref.read(selectedProfileProvider) != null;
 
       final goingToAuthPages = state.matchedLocation == AppRoutes.login ||
-          state.matchedLocation == AppRoutes.register;
+          state.matchedLocation == AppRoutes.register ||
+          state.matchedLocation == AppRoutes.emailVerification ||
+          state.matchedLocation == AppRoutes.forgotPassword;
 
       if (!isLoggedIn) {
         return goingToAuthPages ? null : AppRoutes.login;
@@ -86,6 +94,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.register,
         builder: (context, state) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.emailVerification,
+        builder: (context, state) => EmailVerificationPage(
+          email: (state.extra as String?) ?? '',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(
         path: AppRoutes.profileSelection,
@@ -122,6 +140,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.cashMovements,
         builder: (context, state) => const CashFlowPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

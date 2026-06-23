@@ -10,6 +10,11 @@ import 'package:sales_ledger/features/auth/domain/repositories/profile_repositor
 import 'package:sales_ledger/features/auth/domain/usecases/add_profile_usecase.dart';
 import 'package:sales_ledger/features/auth/domain/usecases/get_profiles_usecase.dart';
 
+/// Supabase kullanıcı meta verisinden şirket adını okur.
+String? _pendingCompanyName() {
+  return supabase.auth.currentUser?.userMetadata?['company_name'] as String?;
+}
+
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepositoryImpl(
     ProfileSupabaseDatasource(supabase),
@@ -29,19 +34,42 @@ final addProfileUseCaseProvider = Provider(
 /// `autoDispose`, profil seçim ekranından çıkıldığında belleği serbest bırakır.
 class ProfilesNotifier extends AutoDisposeAsyncNotifier<List<Profile>> {
   @override
-  Future<List<Profile>> build() {
-    return ref.read(getProfilesUseCaseProvider)();
+  Future<List<Profile>> build() async {
+    final profiles = await ref.read(getProfilesUseCaseProvider)();
+
+    // İlk girişte (e-posta doğrulama sonrası) profil listesi boşsa
+    // kayıt sırasında meta veriye kaydedilen şirket adından otomatik profil oluştur.
+    // Bu otomatik oluşturma başarısız olursa (örn. ağ/RLS sorunu) tüm ekranın
+    // hataya düşüp kullanıcıyı kilitlememesi için hatayı yutuyor ve kullanıcının
+    // "Yeni Profil Ekle" ile manuel denemesine izin veriyoruz.
+    if (profiles.isEmpty) {
+      final companyName = _pendingCompanyName();
+      if (companyName != null && companyName.trim().isNotEmpty) {
+        try {
+          final firstProfile = await ref.read(addProfileUseCaseProvider)(
+            name: companyName.trim(),
+          );
+          return [firstProfile];
+        } catch (_) {
+          return profiles;
+        }
+      }
+    }
+
+    return profiles;
   }
 
   Future<void> addProfile({
     required String name,
     String? role,
     Uint8List? avatarBytes,
+    String? avatarExtension,
   }) async {
     final newProfile = await ref.read(addProfileUseCaseProvider)(
       name: name,
       role: role,
       avatarBytes: avatarBytes,
+      avatarExtension: avatarExtension,
     );
 
     final current = state.valueOrNull ?? const [];

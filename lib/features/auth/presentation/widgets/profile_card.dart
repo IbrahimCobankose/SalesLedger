@@ -22,12 +22,13 @@ class ProfileCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
-                radius: 48,
+                radius: 40,
                 backgroundColor: colorScheme.surfaceContainerLow,
                 backgroundImage:
                     profile.avatarUrl != null ? NetworkImage(profile.avatarUrl!) : null,
@@ -38,25 +39,31 @@ class ProfileCard extends StatelessWidget {
                       )
                     : null,
               ),
-              const SizedBox(height: 16),
-              Text(
-                profile.name,
-                style: textTheme.titleLarge,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 12),
+              Flexible(
+                child: Text(
+                  profile.name,
+                  style: textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (profile.role != null && profile.role!.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    profile.role!,
-                    style: textTheme.labelSmall,
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      profile.role!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.labelSmall,
+                    ),
                   ),
                 ),
               ],
@@ -86,29 +93,39 @@ class AddProfileCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 200),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: colorScheme.outlineVariant, style: BorderStyle.solid),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
-                radius: 40,
+                radius: 36,
                 backgroundColor: colorScheme.surfaceContainer,
                 child: Icon(Icons.add, size: 32, color: colorScheme.onSurfaceVariant),
               ),
-              const SizedBox(height: 16),
-              Text(
-                context.l10n.profileSelectionAddNew,
-                style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+              const SizedBox(height: 12),
+              Flexible(
+                child: Text(
+                  context.l10n.profileSelectionAddNew,
+                  style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const SizedBox(height: 4),
-              Text(
-                context.l10n.profileSelectionAddNewSubtitle,
-                style: textTheme.labelSmall,
-                textAlign: TextAlign.center,
+              Flexible(
+                child: Text(
+                  context.l10n.profileSelectionAddNewSubtitle,
+                  style: textTheme.labelSmall,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

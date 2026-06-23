@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,7 +24,9 @@ class _AddProfilePageState extends ConsumerState<AddProfilePage> {
   final _roleController = TextEditingController();
 
   Uint8List? _avatarBytes;
+  String _avatarExtension = 'jpg';
   bool _isSaving = false;
+  bool _isPickingPhoto = false;
 
   @override
   void dispose() {
@@ -35,15 +36,39 @@ class _AddProfilePageState extends ConsumerState<AddProfilePage> {
   }
 
   Future<void> _pickPhoto() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 800,
-      imageQuality: 85,
-    );
-    if (picked == null) return;
+    // image_picker, önceki çağrı tamamlanmadan tekrar tetiklenirse
+    // PlatformException(already_active) fırlatır; bu koruma art üst üste
+    // dokunmalarda akışın kesilmesini önler.
+    if (_isPickingPhoto) return;
+    _isPickingPhoto = true;
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
 
-    final bytes = await picked.readAsBytes();
-    setState(() => _avatarBytes = bytes);
+      final bytes = await picked.readAsBytes();
+      // Dosya adından uzantıyı çıkar (heic/png/jpg vb.)
+      final name = picked.name.toLowerCase();
+      final ext = name.contains('.') ? name.split('.').last : 'jpg';
+
+      setState(() {
+        _avatarBytes = bytes;
+        _avatarExtension = ext;
+      });
+    } on PlatformException {
+      if (mounted) {
+        CustomSnackbar.show(
+          context,
+          message: 'Fotoğraf seçilemedi. Lütfen tekrar deneyin.',
+          isError: true,
+        );
+      }
+    } finally {
+      _isPickingPhoto = false;
+    }
   }
 
   Future<void> _save() async {
@@ -55,6 +80,7 @@ class _AddProfilePageState extends ConsumerState<AddProfilePage> {
             name: _nameController.text.trim(),
             role: _roleController.text.trim().isEmpty ? null : _roleController.text.trim(),
             avatarBytes: _avatarBytes,
+            avatarExtension: _avatarExtension,
           );
       if (mounted) context.pop();
     } catch (e) {

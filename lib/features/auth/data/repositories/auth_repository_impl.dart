@@ -17,16 +17,28 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      await _authDatasource.signUp(email: email, password: password);
-      // Hesap oluşturulduğunda şirket adı ilk profil olarak kaydedilir (gereksinim 4.1.1).
-      await _profileDatasource.insertProfile(
-        userId: _authDatasource.currentUserId,
-        name: companyName,
+      // Şirket adı meta veri olarak saklanır; oturum açılmadan profil
+      // tablosuna yazılmaz — RLS bunu engeller. İlk profil, e-posta
+      // doğrulaması tamamlanıp giriş yapıldığında ProfilesNotifier tarafından
+      // otomatik oluşturulur (bkz. profile_provider.dart).
+      await _authDatasource.signUp(
+        email: email,
+        password: password,
+        data: {'company_name': companyName},
       );
     } on AuthException catch (e) {
       throw AppException(_mapAuthError(e));
-    } on PostgrestException {
-      throw const AppException('Hesap oluşturuldu ancak profil kaydedilemedi. Lütfen tekrar deneyin.');
+    } on StateError {
+      throw const AppException('Hesap oluşturulamadı. Lütfen tekrar deneyin.');
+    }
+  }
+
+  @override
+  Future<void> resendVerificationEmail({required String email}) async {
+    try {
+      await _authDatasource.resendVerificationEmail(email: email);
+    } on AuthException {
+      throw const AppException('Doğrulama e-postası gönderilemedi. Lütfen tekrar deneyin.');
     }
   }
 
@@ -58,10 +70,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   String _mapAuthError(AuthException e) {
+    final message = e.message.toLowerCase();
+    // Supabase mesaj bazlı ayırt etme (status code'lar sürüme göre değişebilir)
+    if (message.contains('email already registered') ||
+        message.contains('user already registered')) {
+      return 'Bu e-posta adresi zaten kullanımda.';
+    }
+    if (message.contains('invalid login credentials') ||
+        message.contains('invalid email or password')) {
+      return 'E-posta veya şifre hatalı.';
+    }
+    if (message.contains('email not confirmed')) {
+      return 'E-postanız henüz doğrulanmadı. Lütfen gelen kutunuzu kontrol edin.';
+    }
+    if (message.contains('password') && message.contains('length')) {
+      return 'Şifre en az 6 karakter olmalıdır.';
+    }
     switch (e.statusCode) {
       case '400':
-      case '422':
         return 'E-posta veya şifre hatalı.';
+      case '422':
+        return 'Geçersiz e-posta adresi veya şifre.';
       case '429':
         return 'Çok fazla deneme yapıldı. Lütfen biraz sonra tekrar deneyin.';
       default:

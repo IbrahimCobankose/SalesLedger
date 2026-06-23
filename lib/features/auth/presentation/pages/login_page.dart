@@ -145,10 +145,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {
-                              // Şifremi unuttum akışı, bu görev kapsamında ayrı bir
-                              // ekran olarak tanımlanmadığı için ileride eklenecektir.
-                            },
+                            onPressed: () => context.push(AppRoutes.forgotPassword),
                             child: Text(l10n.loginForgotPassword),
                           ),
                         ),

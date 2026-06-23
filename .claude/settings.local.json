@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/İbrahim/Desktop/Satış Defteri/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(cd \"C:\\\\Users\\\\İbrahim\\\\Desktop\\\\Satış Defteri\" && find / -iname \"extract-text*\" 2>/dev/null | head -5)",
+      "Read(//tmp/docx_unpack/unpacked/**)",
+      "Bash(sed -e 's/<w:p[ >]/\\\\n<w:p>/g' document.xml)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && find / -path \"*/gotrue-*/lib/src/types/auth_client_options.dart\" 2>/dev/null | head -1 *)",
+      "Bash(flutter test *)",
+      "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && mkdir -p lib/features/inventory/domain/entities lib/features/inventory/domain/repositories lib/features/inventory/domain/usecases lib/features/inventory/data/models lib/features/inventory/data/datasources lib/features/inventory/data/repositories lib/features/inventory/presentation/providers lib/features/inventory/presentation/widgets)",
+      "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && sed -i 's/\\\\.withOpacity\\(0\\\\.3\\)/.withValues\\(alpha: 0.3\\)/g' lib/features/inventory/presentation/pages/add_product_page.dart && grep -n \"withValues\\\\|withOpacity\" lib/features/inventory/presentation/pages/add_product_page.dart)",
+      "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && mkdir -p lib/features/purchases/domain/entities lib/features/purchases/domain/repositories lib/features/purchases/domain/usecases lib/features/purchases/data/models lib/features/purchases/data/datasources lib/features/purchases/data/repositories lib/features/purchases/presentation/providers lib/features/purchases/presentation/widgets)",
+      "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && mkdir -p lib/features/sales/domain/entities lib/features/sales/domain/repositories lib/features/sales/domain/usecases lib/features/sales/data/models lib/features/sales/data/datasources lib/features/sales/data/repositories lib/features/sales/presentation/providers && find lib/features/sales -type f)",
+      "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && mkdir -p lib/features/finance/domain/entities lib/features/finance/domain/repositories lib/features/finance/domain/usecases lib/features/finance/data/datasources lib/features/finance/data/repositories lib/features/finance/presentation/providers lib/features/finance/presentation/widgets && find lib/features/finance -type f)",
+      "Bash(flutter --version)",
+      "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && sed -i 's/int limit = 5,/int limit = AppLimits.topProductListLimit,/g' lib/features/finance/data/repositories/finance_repository_impl.dart && grep -n \"limit = \" lib/features/finance/data/repositories/finance_repository_impl.dart)",
+      "Bash(flutter gen-l10n *)"
+    ]
+  }
+}

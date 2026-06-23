@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -39,6 +38,7 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
 
   String? _category;
   final List<Uint8List> _photos = [];
+  bool _isPickingPhotos = false;
 
   @override
   void dispose() {
@@ -60,27 +60,44 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
     final remaining = _maxPhotos - _photos.length;
     if (remaining <= 0) return;
 
-    final picked = await ImagePicker().pickMultiImage(maxWidth: 1600, imageQuality: 85);
-    final selected = picked.take(remaining);
-    var skippedForSize = false;
+    // image_picker, önceki çağrı tamamlanmadan tekrar tetiklenirse
+    // PlatformException(already_active) fırlatır; bu koruma art üst üste
+    // dokunmalarda çökmeyi önler.
+    if (_isPickingPhotos) return;
+    _isPickingPhotos = true;
+    try {
+      final picked = await ImagePicker().pickMultiImage(maxWidth: 1600, imageQuality: 85);
+      final selected = picked.take(remaining);
+      var skippedForSize = false;
 
-    for (final file in selected) {
-      final bytes = await file.readAsBytes();
-      if (bytes.length > AppLimits.maxPhotoSizeBytes) {
-        skippedForSize = true;
-        continue;
+      for (final file in selected) {
+        final bytes = await file.readAsBytes();
+        if (bytes.length > AppLimits.maxPhotoSizeBytes) {
+          skippedForSize = true;
+          continue;
+        }
+        _photos.add(bytes);
       }
-      _photos.add(bytes);
-    }
 
-    if (skippedForSize && mounted) {
-      CustomSnackbar.show(
-        context,
-        message: context.l10n.addProductPhotoSizeExceeded(AppLimits.maxPhotoSizeMb),
-        isError: true,
-      );
+      if (skippedForSize && mounted) {
+        CustomSnackbar.show(
+          context,
+          message: context.l10n.addProductPhotoSizeExceeded(AppLimits.maxPhotoSizeMb),
+          isError: true,
+        );
+      }
+      if (mounted) setState(() {});
+    } on PlatformException {
+      if (mounted) {
+        CustomSnackbar.show(
+          context,
+          message: 'Fotoğraf seçilemedi. Lütfen tekrar deneyin.',
+          isError: true,
+        );
+      }
+    } finally {
+      _isPickingPhotos = false;
     }
-    setState(() {});
   }
 
   double? _parseDouble(String text) => text.trim().isEmpty ? null : double.tryParse(text.trim());

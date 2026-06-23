@@ -8,6 +8,7 @@ import 'package:sales_ledger/features/auth/domain/usecases/send_password_reset_u
 import 'package:sales_ledger/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:sales_ledger/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:sales_ledger/features/auth/domain/usecases/sign_up_usecase.dart';
+import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Supabase istemcisi → Datasource → Repository → UseCase → Notifier zinciri.
@@ -33,6 +34,11 @@ final signOutUseCaseProvider = Provider(
 
 final sendPasswordResetUseCaseProvider = Provider(
   (ref) => SendPasswordResetUseCase(ref.watch(authRepositoryProvider)),
+);
+
+/// E-posta doğrulama akışında "Tekrar Gönder" için kullanılır.
+final resendVerificationEmailProvider = Provider(
+  (ref) => ref.watch(authRepositoryProvider),
 );
 
 /// Oturum durumunu (Supabase [AuthState] akışı) tüm uygulamaya yayar.
@@ -83,6 +89,10 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncLoading();
     try {
       await ref.read(signOutUseCaseProvider)();
+      // Seçili profil farklı bir hesaba ait olabileceğinden, çıkış yapınca
+      // temizlenmeli; aksi halde sonraki girişte router yanlışlıkla eski
+      // profille doğrudan ana ekrana yönlendirir.
+      ref.read(selectedProfileProvider.notifier).clear();
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);

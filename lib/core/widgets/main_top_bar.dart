@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/core/widgets/app_shell.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 
@@ -49,16 +51,23 @@ class MainTopBar extends ConsumerWidget implements PreferredSizeWidget {
               ...actions,
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: colorScheme.surfaceContainerHighest,
-                  backgroundImage: profile?.avatarUrl != null ? NetworkImage(profile!.avatarUrl!) : null,
-                  child: profile?.avatarUrl == null
-                      ? Text(
-                          profile?.name.isNotEmpty == true ? profile!.name[0].toUpperCase() : '?',
-                          style: const TextStyle(fontSize: 12),
-                        )
-                      : null,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () => context.go(AppRoutes.profileSelection),
+                  child: Tooltip(
+                    message: context.l10n.profileSelectionTitle,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      backgroundImage: profile?.avatarUrl != null ? NetworkImage(profile!.avatarUrl!) : null,
+                      child: profile?.avatarUrl == null
+                          ? Text(
+                              profile?.name.isNotEmpty == true ? profile!.name[0].toUpperCase() : '?',
+                              style: const TextStyle(fontSize: 12),
+                            )
+                          : null,
+                    ),
+                  ),
                 ),
               ),
             ],

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
+import 'package:sales_ledger/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/widgets/profile_card.dart';
 
@@ -20,6 +21,18 @@ class ProfileSelectionPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: l10n.navLogout,
+            onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -68,7 +81,7 @@ class ProfileSelectionPage extends ConsumerWidget {
                       crossAxisCount: MediaQuery.of(context).size.width > 700 ? 3 : 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
-                      childAspectRatio: 0.95,
+                      childAspectRatio: 0.82,
                       children: [
                         ...profiles.map(
                           (profile) => ProfileCard(

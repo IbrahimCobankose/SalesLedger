@@ -7,8 +7,21 @@ class AuthSupabaseDatasource implements AuthDatasource {
   final SupabaseClient _client;
 
   @override
-  Future<void> signUp({required String email, required String password}) async {
-    await _client.auth.signUp(email: email, password: password);
+  Future<String> signUp({
+    required String email,
+    required String password,
+    Map<String, dynamic>? data,
+  }) async {
+    final res = await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: data,
+    );
+    final id = res.user?.id;
+    if (id == null) {
+      throw StateError('Kayıt yanıtından kullanıcı ID alınamadı.');
+    }
+    return id;
   }
 
   @override
@@ -22,6 +35,11 @@ class AuthSupabaseDatasource implements AuthDatasource {
   @override
   Future<void> sendPasswordResetEmail({required String email}) {
     return _client.auth.resetPasswordForEmail(email);
+  }
+
+  @override
+  Future<void> resendVerificationEmail({required String email}) {
+    return _client.auth.resend(type: OtpType.signup, email: email);
   }
 
   @override

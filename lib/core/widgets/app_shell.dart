@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
+import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 
@@ -134,20 +135,27 @@ class _SideNavigationContent extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 32),
-              _DrawerLink(icon: Icons.account_circle_outlined, label: context.l10n.navProfile, onTap: () {}),
-              _DrawerLink(icon: Icons.settings_outlined, label: context.l10n.navSettings, onTap: () {}),
               _DrawerLink(
-                icon: Icons.table_view_outlined,
-                label: context.l10n.commonExportExcel,
-                onTap: () {},
+                icon: Icons.settings_outlined,
+                label: context.l10n.navSettings,
+                onTap: () {
+                  if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+                    Navigator.of(context).pop();
+                  }
+                  context.push(AppRoutes.settings);
+                },
               ),
-              _DrawerLink(icon: Icons.description_outlined, label: context.l10n.navReports, onTap: () {}),
               const Spacer(),
               _DrawerLink(
                 icon: Icons.logout,
                 label: context.l10n.navLogout,
                 isDestructive: true,
-                onTap: () => ref.read(authControllerProvider.notifier).signOut(),
+                onTap: () {
+                  if (Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+                    Navigator.of(context).pop();
+                  }
+                  ref.read(authControllerProvider.notifier).signOut();
+                },
               ),
             ],
           ),

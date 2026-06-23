@@ -20,6 +20,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return await _profileDatasource.getProfiles(_authDatasource.currentUserId);
     } on PostgrestException {
       throw const AppException('Profiller yüklenemedi. Lütfen tekrar deneyin.');
+    } on StateError {
+      throw const AppException('Oturum bulunamadı. Lütfen tekrar giriş yapın.');
     }
   }
 
@@ -28,6 +30,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String name,
     String? role,
     Uint8List? avatarBytes,
+    String? avatarExtension,
   }) async {
     try {
       final userId = _authDatasource.currentUserId;
@@ -37,7 +40,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         avatarUrl = await _profileDatasource.uploadAvatar(
           userId: userId,
           bytes: avatarBytes,
-          fileExtension: 'jpg',
+          fileExtension: avatarExtension ?? 'jpg',
         );
       }
 
@@ -47,10 +50,20 @@ class ProfileRepositoryImpl implements ProfileRepository {
         role: role,
         avatarUrl: avatarUrl,
       );
-    } on StorageException {
+    } on StorageException catch (e) {
+      // Bucket bulunamadı veya RLS hatası için daha açıklayıcı mesaj
+      final msg = e.message.toLowerCase();
+      if (msg.contains('bucket') || msg.contains('not found')) {
+        throw const AppException(
+          'Fotoğraf yüklenemedi: Depolama alanı yapılandırılmamış. '
+          'Supabase Dashboard\'da "avatars" bucket\'ını oluşturun.',
+        );
+      }
       throw const AppException('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
     } on PostgrestException {
       throw const AppException('Profil kaydedilemedi. Lütfen tekrar deneyin.');
+    } on StateError {
+      throw const AppException('Oturum bulunamadı. Lütfen tekrar giriş yapın.');
     }
   }
 
@@ -64,9 +77,31 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Profile> updateProfile(Profile profile) async {
+  Future<Profile> updateProfile(
+    Profile profile, {
+    Uint8List? newAvatarBytes,
+    String? avatarExtension,
+  }) async {
     try {
-      return await _profileDatasource.updateProfile(ProfileModel.fromEntity(profile));
+      var updated = profile;
+      if (newAvatarBytes != null) {
+        final avatarUrl = await _profileDatasource.uploadAvatar(
+          userId: profile.userId,
+          bytes: newAvatarBytes,
+          fileExtension: avatarExtension ?? 'jpg',
+        );
+        updated = profile.copyWith(avatarUrl: avatarUrl);
+      }
+      return await _profileDatasource.updateProfile(ProfileModel.fromEntity(updated));
+    } on StorageException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('bucket') || msg.contains('not found')) {
+        throw const AppException(
+          'Fotoğraf yüklenemedi: Depolama alanı yapılandırılmamış. '
+          'Supabase Dashboard\'da "avatars" bucket\'ını oluşturun.',
+        );
+      }
+      throw const AppException('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
     } on PostgrestException {
       throw const AppException('Profil güncellenemedi. Lütfen tekrar deneyin.');
     }

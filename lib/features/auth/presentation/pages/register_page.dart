@@ -6,6 +6,7 @@ import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/custom_button.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
+import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/widgets/auth_text_field.dart';
 
@@ -34,13 +35,21 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final email = _emailController.text.trim();
     final success = await ref.read(authControllerProvider.notifier).signUp(
           companyName: _companyNameController.text.trim(),
-          email: _emailController.text.trim(),
+          email: email,
           password: _passwordController.text,
         );
 
-    if (!success && mounted) {
+    if (!mounted) return;
+
+    if (success) {
+      // E-posta doğrulama akışı: doğrulama bekleme ekranına yönlendir.
+      // E-posta doğrulama kapalıysa Supabase zaten oturum açar ve router
+      // otomatik olarak profil seçim ekranına yönlendirir.
+      context.push(AppRoutes.emailVerification, extra: email);
+    } else {
       final error = ref.read(authControllerProvider).error;
       CustomSnackbar.show(
         context,

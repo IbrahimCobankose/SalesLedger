@@ -28,8 +28,16 @@ class PrimaryButton extends StatelessWidget {
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 if (icon != null) ...[
                   const SizedBox(width: 8),
                   Icon(icon, size: 20),
