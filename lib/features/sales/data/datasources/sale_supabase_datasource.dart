@@ -112,6 +112,34 @@ class SaleSupabaseDatasource implements SaleDatasource {
   }
 
   @override
+  Future<SaleModel> updateSale({
+    required String saleId,
+    required SaleModel sale,
+    required List<SaleItemDraft> items,
+  }) async {
+    await _client.from('sales').update(sale.toInsertJson()).eq('id', saleId);
+
+    // Kalemleri tamamen yenile: eskileri sil, yenilerini ekle.
+    await _client.from('sale_items').delete().eq('sale_id', saleId);
+    if (items.isNotEmpty) {
+      await _client.from('sale_items').insert(
+            items
+                .map((item) => {
+                      'sale_id': saleId,
+                      'product_id': item.productId,
+                      'name': item.name,
+                      'custom_sale_price': item.unitPrice,
+                      'quantity': item.quantity,
+                    })
+                .toList(),
+          );
+    }
+
+    final row = await _client.from('sales').select(_selectWithRelations).eq('id', saleId).single();
+    return SaleModel.fromJson(row);
+  }
+
+  @override
   Future<void> deleteSale(String id) async {
     await _client.from('sales').delete().eq('id', id);
   }

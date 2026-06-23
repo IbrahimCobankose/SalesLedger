@@ -6,6 +6,9 @@ import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/custom_button.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
+import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
+import 'package:sales_ledger/features/inventory/domain/entities/product_query.dart';
+import 'package:sales_ledger/features/inventory/presentation/providers/product_provider.dart';
 import 'package:sales_ledger/features/sales/domain/entities/cargo_status.dart';
 import 'package:sales_ledger/features/sales/domain/entities/sale_item_draft.dart';
 import 'package:sales_ledger/features/sales/presentation/providers/sale_provider.dart';
@@ -14,11 +17,26 @@ class _ItemRow {
   _ItemRow()
       : nameController = TextEditingController(),
         priceController = TextEditingController(),
-        quantityController = TextEditingController(text: '1');
+        quantityController = TextEditingController(text: '1'),
+        focusNode = FocusNode();
+
+  _ItemRow.withValues({
+    required String name,
+    required double price,
+    required int quantity,
+    this.productId,
+  })  : nameController = TextEditingController(text: name),
+        priceController = TextEditingController(text: price.toStringAsFixed(2)),
+        quantityController = TextEditingController(text: '$quantity'),
+        focusNode = FocusNode();
 
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController quantityController;
+  final FocusNode focusNode;
+
+  /// Envanterden seçilen ürünün kimliği; elle yazılmışsa null.
+  String? productId;
 
   double get lineTotal {
     final price = double.tryParse(priceController.text.trim()) ?? 0;
@@ -30,6 +48,7 @@ class _ItemRow {
     nameController.dispose();
     priceController.dispose();
     quantityController.dispose();
+    focusNode.dispose();
   }
 }
 
@@ -40,9 +59,14 @@ const _months = [
 String _formatDate(DateTime date) =>
     '${date.day.toString().padLeft(2, '0')} ${_months[date.month - 1]} ${date.year}';
 
-/// satış_ekle.html taslağına karşılık gelen satış ekleme formu.
+/// satış_ekle.html taslağına karşılık gelen satış ekleme/düzenleme formu.
+/// [saleId] verilirse mevcut satış yüklenip düzenleme modunda açılır.
 class AddSalePage extends ConsumerStatefulWidget {
-  const AddSalePage({super.key});
+  const AddSalePage({super.key, this.saleId});
+
+  final String? saleId;
+
+  bool get isEditing => saleId != null;
 
   @override
   ConsumerState<AddSalePage> createState() => _AddSalePageState();
@@ -57,6 +81,55 @@ class _AddSalePageState extends ConsumerState<AddSalePage> {
   DateTime _saleDate = DateTime.now();
   CargoStatus _cargoStatus = CargoStatus.packaging;
   final List<_ItemRow> _items = [_ItemRow()];
+  bool _isLoadingExisting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.saleId != null) {
+      _isLoadingExisting = true;
+      _loadExisting();
+    }
+  }
+
+  Future<void> _loadExisting() async {
+    try {
+      final sale = await ref.read(getSaleByIdUseCaseProvider)(widget.saleId!);
+      final items = await ref.read(getSaleItemsUseCaseProvider)(widget.saleId!);
+      if (!mounted) return;
+      setState(() {
+        _customerNameController.text = sale.customerName ?? '';
+        _platformController.text = sale.platform ?? '';
+        _trackingNumberController.text = sale.trackingNumber ?? '';
+        _notesController.text = sale.notes ?? '';
+        _saleDate = sale.saleDate;
+        _cargoStatus = sale.status;
+        for (final row in _items) {
+          row.dispose();
+        }
+        _items
+          ..clear()
+          ..addAll(
+            items.isEmpty
+                ? [_ItemRow()]
+                : items.map(
+                    (it) => _ItemRow.withValues(
+                      name: it.name,
+                      price: it.customSalePrice,
+                      quantity: it.quantity,
+                      productId: it.productId,
+                    ),
+                  ),
+          );
+        _isLoadingExisting = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingExisting = false);
+        CustomSnackbar.show(context, message: 'Satış yüklenemedi.', isError: true);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -100,21 +173,39 @@ class _AddSalePageState extends ConsumerState<AddSalePage> {
             name: item.nameController.text.trim(),
             unitPrice: double.parse(item.priceController.text.trim()),
             quantity: int.parse(item.quantityController.text.trim()),
+            productId: item.productId,
           ),
         )
         .toList();
 
-    final success = await ref.read(addSaleControllerProvider.notifier).addSale(
-          customerName:
-              _customerNameController.text.trim().isEmpty ? null : _customerNameController.text.trim(),
-          saleDate: _saleDate,
-          platform: _platformController.text.trim().isEmpty ? null : _platformController.text.trim(),
-          items: drafts,
-          status: _cargoStatus,
-          trackingNumber:
-              _trackingNumberController.text.trim().isEmpty ? null : _trackingNumberController.text.trim(),
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-        );
+    final controller = ref.read(addSaleControllerProvider.notifier);
+    final customerName =
+        _customerNameController.text.trim().isEmpty ? null : _customerNameController.text.trim();
+    final platform = _platformController.text.trim().isEmpty ? null : _platformController.text.trim();
+    final trackingNumber =
+        _trackingNumberController.text.trim().isEmpty ? null : _trackingNumberController.text.trim();
+    final notes = _notesController.text.trim().isEmpty ? null : _notesController.text.trim();
+
+    final success = widget.saleId == null
+        ? await controller.addSale(
+            customerName: customerName,
+            saleDate: _saleDate,
+            platform: platform,
+            items: drafts,
+            status: _cargoStatus,
+            trackingNumber: trackingNumber,
+            notes: notes,
+          )
+        : await controller.updateSale(
+            saleId: widget.saleId!,
+            customerName: customerName,
+            saleDate: _saleDate,
+            platform: platform,
+            items: drafts,
+            status: _cargoStatus,
+            trackingNumber: trackingNumber,
+            notes: notes,
+          );
 
     if (!mounted) return;
 
@@ -138,8 +229,13 @@ class _AddSalePageState extends ConsumerState<AddSalePage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(title: Text(l10n.addSaleTitle), centerTitle: true),
-      body: SafeArea(
+      appBar: AppBar(
+        title: Text(widget.isEditing ? 'Satışı Düzenle' : l10n.addSaleTitle),
+        centerTitle: true,
+      ),
+      body: _isLoadingExisting
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -302,19 +398,7 @@ class _AddSalePageState extends ConsumerState<AddSalePage> {
         children: [
           Row(
             children: [
-              Expanded(
-                child: TextFormField(
-                  controller: item.nameController,
-                  decoration: InputDecoration(
-                    labelText: l10n.commonProduct,
-                    hintText: l10n.addSaleProductHint,
-                    prefixIcon: const Icon(Icons.search),
-                  ),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? l10n.commonProductNameRequired : null,
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
+              Expanded(child: _buildProductPicker(item, l10n)),
               if (_items.length > 1)
                 IconButton(icon: const Icon(Icons.close), onPressed: () => _removeItemRow(index)),
             ],
@@ -353,6 +437,83 @@ class _AddSalePageState extends ConsumerState<AddSalePage> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Envanterden ürün arayıp seçmeyi sağlayan alan. Seçilince ürün adı, satış
+  /// fiyatı ve [_ItemRow.productId] otomatik dolar; elle yazılırsa serbest
+  /// metin olarak (envanter bağlantısız) kabul edilir.
+  Widget _buildProductPicker(_ItemRow item, AppLocalizations l10n) {
+    return RawAutocomplete<Product>(
+      textEditingController: item.nameController,
+      focusNode: item.focusNode,
+      optionsBuilder: (TextEditingValue value) async {
+        final query = value.text.trim();
+        if (query.isEmpty) return const Iterable<Product>.empty();
+        try {
+          return await ref.read(productRepositoryProvider).getProducts(
+                ProductQuery(search: query, pageSize: 8),
+              );
+        } catch (_) {
+          return const Iterable<Product>.empty();
+        }
+      },
+      displayStringForOption: (product) => product.name,
+      onSelected: (product) {
+        item.productId = product.id;
+        item.priceController.text = product.salePrice.toStringAsFixed(2);
+        setState(() {});
+      },
+      fieldViewBuilder: (context, textController, focusNode, onFieldSubmitted) {
+        return TextFormField(
+          controller: textController,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: l10n.commonProduct,
+            hintText: l10n.addSaleProductHint,
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: item.productId != null
+                ? Icon(Icons.link, size: 18, color: Theme.of(context).colorScheme.primary)
+                : null,
+          ),
+          validator: (value) =>
+              (value == null || value.trim().isEmpty) ? l10n.commonProductNameRequired : null,
+          onChanged: (_) {
+            // Kullanıcı adı elle değiştirdiyse envanter bağlantısını kaldır.
+            if (item.productId != null) item.productId = null;
+            setState(() {});
+          },
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 240, maxWidth: 400),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, i) {
+                  final product = options.elementAt(i);
+                  return ListTile(
+                    leading: Icon(Icons.inventory_2_outlined, color: colorScheme.primary),
+                    title: Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(
+                      '₺${product.salePrice.toStringAsFixed(2)} · ${l10n.commonUnitsCount(product.stockQuantity)}',
+                    ),
+                    onTap: () => onSelected(product),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

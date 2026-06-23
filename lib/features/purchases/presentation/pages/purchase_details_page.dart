@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +29,7 @@ class PurchaseDetailsPage extends ConsumerWidget {
 
     try {
       await ref.read(deletePurchaseUseCaseProvider)(purchaseId);
+      ref.invalidate(purchasesProvider);
       if (context.mounted) context.pop();
     } catch (e) {
       if (context.mounted) {
@@ -78,77 +80,92 @@ class _PurchaseDetailsBody extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
     final itemsAsync = ref.watch(purchaseItemsProvider(purchase.id));
+    final isWide = MediaQuery.of(context).size.width > 700;
+
+    final supplierCard = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  l10n.purchaseDetailsSupplierInfo,
+                  style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+              ),
+              PurchaseStatusBadge(status: purchase.status),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(purchase.displaySupplierName, style: textTheme.headlineMedium),
+        ],
+      ),
+    );
+
+    final totalCard = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.purchaseDetailsTotalAmount,
+            style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '₺${purchase.totalAmount.toStringAsFixed(2)}',
+            style: textTheme.displayLarge?.copyWith(color: colorScheme.primary),
+          ),
+          const SizedBox(height: 16),
+          _SummaryRow(label: l10n.commonDate, value: formatTurkishDate(purchase.purchaseDate)),
+          if (purchase.paymentType != null)
+            _SummaryRow(label: l10n.purchaseDetailsPaymentType, value: purchase.paymentType!),
+        ],
+      ),
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Flex(
-              direction: MediaQuery.of(context).size.width > 700 ? Axis.horizontal : Axis.vertical,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              l10n.purchaseDetailsSupplierInfo,
-                              style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-                            ),
-                            PurchaseStatusBadge(status: purchase.status),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(purchase.displaySupplierName, style: textTheme.headlineMedium),
-                      ],
-                    ),
-                  ),
+            // Dar ekranda Expanded kullanılmaz (dikey kaydırmada sınırsız
+            // yükseklik hatasını ve boş sayfayı önlemek için).
+            if (isWide)
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(flex: 2, child: supplierCard),
+                    const SizedBox(width: 16),
+                    Expanded(child: totalCard),
+                  ],
                 ),
-                const SizedBox(width: 16, height: 16),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.purchaseDetailsTotalAmount,
-                          style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '₺${purchase.totalAmount.toStringAsFixed(2)}',
-                          style: textTheme.displayLarge?.copyWith(color: colorScheme.primary),
-                        ),
-                        const SizedBox(height: 16),
-                        _SummaryRow(label: l10n.commonDate, value: formatTurkishDate(purchase.purchaseDate)),
-                        if (purchase.paymentType != null)
-                          _SummaryRow(label: l10n.purchaseDetailsPaymentType, value: purchase.paymentType!),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              )
+            else ...[
+              supplierCard,
+              const SizedBox(height: 16),
+              totalCard,
+            ],
             const SizedBox(height: 16),
+            if (purchase.photos.isNotEmpty) ...[
+              _PurchasePhotos(photos: purchase.photos),
+              const SizedBox(height: 16),
+            ],
             Container(
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerLowest,
@@ -202,6 +219,60 @@ class _PurchaseDetailsBody extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PurchasePhotos extends StatelessWidget {
+  const _PurchasePhotos({required this.photos});
+
+  final List<String> photos;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Fotoğraflar', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final url in photos)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    imageUrl: url,
+                    width: 96,
+                    height: 96,
+                    fit: BoxFit.cover,
+                    placeholder: (context, _) => Container(
+                      width: 96,
+                      height: 96,
+                      color: colorScheme.surfaceContainer,
+                    ),
+                    errorWidget: (context, _, _) => Container(
+                      width: 96,
+                      height: 96,
+                      color: colorScheme.surfaceContainer,
+                      child: Icon(Icons.broken_image_outlined, color: colorScheme.outline),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

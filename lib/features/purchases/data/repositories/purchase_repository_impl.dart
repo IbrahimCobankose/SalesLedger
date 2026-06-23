@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/features/auth/data/datasources/auth_datasource.dart';
 import 'package:sales_ledger/features/purchases/data/datasources/purchase_datasource.dart';
@@ -49,22 +51,38 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
     required List<PurchaseItemDraft> items,
     String? paymentType,
     String? notes,
+    List<Uint8List> photos = const [],
   }) async {
     try {
+      final userId = _authDatasource.currentUserId;
       final totalAmount = items.fold<double>(0, (sum, item) => sum + item.lineTotal);
+
+      final photoUrls = photos.isEmpty
+          ? const <String>[]
+          : await _datasource.uploadPhotos(userId: userId, photos: photos);
 
       final draft = PurchaseModel(
         id: '',
-        userId: _authDatasource.currentUserId,
+        userId: userId,
         supplierName: supplierName,
         purchaseDate: purchaseDate,
         notes: notes,
         paymentType: paymentType,
         totalAmount: totalAmount,
+        photos: photoUrls,
         createdAt: DateTime.now(),
       );
 
       return await _datasource.insertPurchase(purchase: draft, items: items);
+    } on StorageException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('bucket') || msg.contains('not found')) {
+        throw const AppException(
+          'Fotoğraf yüklenemedi: Depolama alanı yapılandırılmamış. '
+          'Supabase Dashboard\'da "purchase-photos" bucket\'ını oluşturun.',
+        );
+      }
+      throw const AppException('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
     } on PostgrestException {
       throw const AppException('Alış kaydedilemedi. Lütfen tekrar deneyin.');
     }

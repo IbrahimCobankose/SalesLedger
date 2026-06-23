@@ -5,10 +5,16 @@ import 'package:sales_ledger/features/auth/domain/entities/profile.dart';
 /// profil_seçimi taslağındaki profil kartı. Fotoğraf yoksa baş harf
 /// rozeti gösterilir.
 class ProfileCard extends StatelessWidget {
-  const ProfileCard({super.key, required this.profile, required this.onTap});
+  const ProfileCard({
+    super.key,
+    required this.profile,
+    required this.onTap,
+    this.onLongPress,
+  });
 
   final Profile profile;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +26,7 @@ class ProfileCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

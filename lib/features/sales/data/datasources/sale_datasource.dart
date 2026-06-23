@@ -22,5 +22,12 @@ abstract class SaleDatasource {
     required List<SaleItemDraft> items,
   });
 
+  /// Satışı ve kalemlerini günceller. Mevcut kalemler silinip yenileri yazılır.
+  Future<SaleModel> updateSale({
+    required String saleId,
+    required SaleModel sale,
+    required List<SaleItemDraft> items,
+  });
+
   Future<void> deleteSale(String id);
 }

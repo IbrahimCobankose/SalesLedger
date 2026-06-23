@@ -16,6 +16,7 @@ class PurchaseModel extends Purchase {
     super.paymentType,
     super.totalAmount,
     super.itemCount,
+    super.photos,
     required super.createdAt,
   });
 
@@ -41,6 +42,7 @@ class PurchaseModel extends Purchase {
       paymentType: json['payment_type'] as String?,
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0,
       itemCount: itemCount,
+      photos: (json['photos'] as List?)?.cast<String>() ?? const [],
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -56,6 +58,7 @@ class PurchaseModel extends Purchase {
       'status': status.dbValue,
       'payment_type': paymentType,
       'total_amount': totalAmount,
+      'photos': photos,
     };
   }
 }

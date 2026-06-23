@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
 import 'package:sales_ledger/features/auth/data/datasources/auth_supabase_datasource.dart';
@@ -117,6 +119,7 @@ class AddPurchaseController extends AsyncNotifier<void> {
     required List<PurchaseItemDraft> items,
     String? paymentType,
     String? notes,
+    List<Uint8List> photos = const [],
   }) async {
     state = const AsyncLoading();
     try {
@@ -126,6 +129,7 @@ class AddPurchaseController extends AsyncNotifier<void> {
         items: items,
         paymentType: paymentType,
         notes: notes,
+        photos: photos,
       );
       state = const AsyncData(null);
       ref.invalidate(purchasesProvider);

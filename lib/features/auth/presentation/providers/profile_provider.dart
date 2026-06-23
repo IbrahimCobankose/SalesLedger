@@ -76,6 +76,18 @@ class ProfilesNotifier extends AutoDisposeAsyncNotifier<List<Profile>> {
     state = AsyncData([...current, newProfile]);
   }
 
+  Future<void> deleteProfile(String id) async {
+    await ref.read(profileRepositoryProvider).deleteProfile(id);
+
+    final current = state.valueOrNull ?? const [];
+    state = AsyncData(current.where((profile) => profile.id != id).toList());
+
+    // Silinen profil o an seçili olansa, seçimi temizle.
+    if (ref.read(selectedProfileProvider)?.id == id) {
+      ref.read(selectedProfileProvider.notifier).clear();
+    }
+  }
+
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => ref.read(getProfilesUseCaseProvider)());

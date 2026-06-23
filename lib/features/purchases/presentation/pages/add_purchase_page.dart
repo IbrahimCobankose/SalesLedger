@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:sales_ledger/core/constants/app_limits.dart';
 import 'package:sales_ledger/core/l10n/gen/app_localizations.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
@@ -62,6 +65,8 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
   DateTime _purchaseDate = DateTime.now();
   String _paymentType = _paymentTypes.first;
   final List<_ItemRow> _items = [_ItemRow()];
+  final List<Uint8List> _photos = [];
+  bool _isPickingPhotos = false;
 
   @override
   void dispose() {
@@ -83,6 +88,39 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
       lastDate: DateTime(2100),
     );
     if (picked != null) setState(() => _purchaseDate = picked);
+  }
+
+  Future<void> _pickPhotos() async {
+    final remaining = AppLimits.maxProductPhotos - _photos.length;
+    if (remaining <= 0) return;
+    if (_isPickingPhotos) return;
+    _isPickingPhotos = true;
+    try {
+      final picked = await ImagePicker().pickMultiImage(maxWidth: 1600, imageQuality: 85);
+      var skippedForSize = false;
+      for (final file in picked.take(remaining)) {
+        final bytes = await file.readAsBytes();
+        if (bytes.length > AppLimits.maxPhotoSizeBytes) {
+          skippedForSize = true;
+          continue;
+        }
+        _photos.add(bytes);
+      }
+      if (skippedForSize && mounted) {
+        CustomSnackbar.show(
+          context,
+          message: context.l10n.addProductPhotoSizeExceeded(AppLimits.maxPhotoSizeMb),
+          isError: true,
+        );
+      }
+      if (mounted) setState(() {});
+    } on PlatformException {
+      if (mounted) {
+        CustomSnackbar.show(context, message: 'Fotoğraf seçilemedi. Lütfen tekrar deneyin.', isError: true);
+      }
+    } finally {
+      _isPickingPhotos = false;
+    }
   }
 
   void _addItemRow() => setState(() => _items.add(_ItemRow()));
@@ -114,6 +152,7 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
           items: drafts,
           paymentType: _paymentType,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          photos: _photos,
         );
 
     if (!mounted) return;
@@ -203,6 +242,11 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
                           label: Text(l10n.commonAddAnotherProduct),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSection(
+                      title: 'Fotoğraflar (opsiyonel)',
+                      children: [_buildPhotoGrid(colorScheme)],
                     ),
                     const SizedBox(height: 16),
                     _buildSection(
@@ -324,6 +368,50 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPhotoGrid(ColorScheme colorScheme) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var i = 0; i < _photos.length; i++)
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.memory(_photos[i], width: 80, height: 80, fit: BoxFit.cover),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () => setState(() => _photos.removeAt(i)),
+                  child: CircleAvatar(
+                    radius: 10,
+                    backgroundColor: colorScheme.error,
+                    child: Icon(Icons.close, size: 14, color: colorScheme.onError),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        if (_photos.length < AppLimits.maxProductPhotos)
+          GestureDetector(
+            onTap: _pickPhotos,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colorScheme.primary, width: 2),
+              ),
+              child: Icon(Icons.add_a_photo_outlined, color: colorScheme.primary),
+            ),
+          ),
+      ],
     );
   }
 

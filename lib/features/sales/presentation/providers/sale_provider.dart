@@ -14,6 +14,7 @@ import 'package:sales_ledger/features/sales/domain/usecases/delete_sale_usecase.
 import 'package:sales_ledger/features/sales/domain/usecases/get_sale_by_id_usecase.dart';
 import 'package:sales_ledger/features/sales/domain/usecases/get_sale_items_usecase.dart';
 import 'package:sales_ledger/features/sales/domain/usecases/get_sales_usecase.dart';
+import 'package:sales_ledger/features/sales/domain/usecases/update_sale_usecase.dart';
 
 final saleRepositoryProvider = Provider<SaleRepository>((ref) {
   return SaleRepositoryImpl(
@@ -36,6 +37,9 @@ final addSaleUseCaseProvider = Provider(
 );
 final deleteSaleUseCaseProvider = Provider(
   (ref) => DeleteSaleUseCase(ref.watch(saleRepositoryProvider)),
+);
+final updateSaleUseCaseProvider = Provider(
+  (ref) => UpdateSaleUseCase(ref.watch(saleRepositoryProvider)),
 );
 
 /// Satış listesinin arama/durum/sıralama filtresini tutar.
@@ -135,6 +139,39 @@ class AddSaleController extends AsyncNotifier<void> {
       );
       state = const AsyncData(null);
       ref.invalidate(salesProvider);
+      return true;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      return false;
+    }
+  }
+
+  Future<bool> updateSale({
+    required String saleId,
+    String? customerName,
+    required DateTime saleDate,
+    String? platform,
+    required List<SaleItemDraft> items,
+    CargoStatus status = CargoStatus.packaging,
+    String? trackingNumber,
+    String? notes,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(updateSaleUseCaseProvider)(
+        saleId: saleId,
+        customerName: customerName,
+        saleDate: saleDate,
+        platform: platform,
+        items: items,
+        status: status,
+        trackingNumber: trackingNumber,
+        notes: notes,
+      );
+      state = const AsyncData(null);
+      ref.invalidate(salesProvider);
+      ref.invalidate(saleDetailsProvider(saleId));
+      ref.invalidate(saleItemsProvider(saleId));
       return true;
     } catch (e, st) {
       state = AsyncError(e, st);

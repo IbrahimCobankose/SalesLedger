@@ -83,6 +83,46 @@ class SaleRepositoryImpl implements SaleRepository {
   }
 
   @override
+  Future<Sale> updateSale({
+    required String saleId,
+    String? customerName,
+    required DateTime saleDate,
+    String? platform,
+    required List<SaleItemDraft> items,
+    CargoStatus status = CargoStatus.packaging,
+    String? trackingNumber,
+    String? notes,
+  }) async {
+    try {
+      final userId = _authDatasource.currentUserId;
+      final totalAmount = items.fold<double>(0, (sum, item) => sum + item.lineTotal);
+
+      String? customerId;
+      if (customerName != null && customerName.trim().isNotEmpty) {
+        customerId = await _datasource.findOrCreateCustomer(userId: userId, name: customerName);
+      }
+
+      final model = SaleModel(
+        id: saleId,
+        userId: userId,
+        customerId: customerId,
+        customerName: customerName,
+        saleDate: saleDate,
+        platform: platform,
+        notes: notes,
+        status: status,
+        trackingNumber: trackingNumber,
+        totalAmount: totalAmount,
+        createdAt: DateTime.now(),
+      );
+
+      return await _datasource.updateSale(saleId: saleId, sale: model, items: items);
+    } on PostgrestException {
+      throw const AppException('Satış güncellenemedi. Lütfen tekrar deneyin.');
+    }
+  }
+
+  @override
   Future<void> deleteSale(String id) async {
     try {
       await _datasource.deleteSale(id);

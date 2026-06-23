@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
+import 'package:sales_ledger/core/widgets/confirm_dialog.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
@@ -89,6 +90,33 @@ class ProfileSelectionPage extends ConsumerWidget {
                             onTap: () {
                               ref.read(selectedProfileProvider.notifier).select(profile);
                               context.go(AppRoutes.inventory);
+                            },
+                            onLongPress: () async {
+                              final confirmed = await ConfirmDialog.show(
+                                context,
+                                title: 'Profili Sil',
+                                message:
+                                    '"${profile.name}" profilini silmek istediğinize emin misiniz?',
+                              );
+                              if (!confirmed) return;
+                              try {
+                                await ref.read(profilesProvider.notifier).deleteProfile(profile.id);
+                                if (context.mounted) {
+                                  CustomSnackbar.show(
+                                    context,
+                                    message: 'Profil silindi.',
+                                    isError: false,
+                                  );
+                                }
+                              } catch (_) {
+                                if (context.mounted) {
+                                  CustomSnackbar.show(
+                                    context,
+                                    message: 'Profil silinemedi. Lütfen tekrar deneyin.',
+                                    isError: true,
+                                  );
+                                }
+                              }
                             },
                           ),
                         ),

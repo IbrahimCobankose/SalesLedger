@@ -25,5 +25,17 @@ abstract class SaleRepository {
     String? notes,
   });
 
+  /// Mevcut bir satışı ve kalemlerini günceller.
+  Future<Sale> updateSale({
+    required String saleId,
+    String? customerName,
+    required DateTime saleDate,
+    String? platform,
+    required List<SaleItemDraft> items,
+    CargoStatus status = CargoStatus.packaging,
+    String? trackingNumber,
+    String? notes,
+  });
+
   Future<void> deleteSale(String id);
 }

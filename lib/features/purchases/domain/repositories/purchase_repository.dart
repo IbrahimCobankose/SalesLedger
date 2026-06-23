@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:sales_ledger/features/purchases/domain/entities/purchase.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item_draft.dart';
@@ -19,6 +21,7 @@ abstract class PurchaseRepository {
     required List<PurchaseItemDraft> items,
     String? paymentType,
     String? notes,
+    List<Uint8List> photos = const [],
   });
 
   Future<void> deletePurchase(String id);

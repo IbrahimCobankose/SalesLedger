@@ -68,13 +68,18 @@ class ProductCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '₺${product.salePrice.toStringAsFixed(2)}',
-                      style: textTheme.headlineSmall?.copyWith(
-                        color: outOfStock ? colorScheme.onSurfaceVariant : colorScheme.primary,
-                        fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Text(
+                        '₺${product.salePrice.toStringAsFixed(2)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.headlineSmall?.copyWith(
+                          color: outOfStock ? colorScheme.onSurfaceVariant : colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     StockBadge(stockQuantity: product.stockQuantity),
                   ],
                 ),

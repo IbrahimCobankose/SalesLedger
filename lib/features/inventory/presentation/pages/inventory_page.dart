@@ -147,7 +147,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 480,
-                      mainAxisExtent: 104,
+                      mainAxisExtent: 116,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                     ),

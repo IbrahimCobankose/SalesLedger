@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:sales_ledger/features/purchases/data/datasources/purchase_datasource.dart';
 import 'package:sales_ledger/features/purchases/data/models/purchase_item_model.dart';
 import 'package:sales_ledger/features/purchases/data/models/purchase_model.dart';
@@ -9,6 +11,21 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
   PurchaseSupabaseDatasource(this._client);
 
   final SupabaseClient _client;
+  static const _photoBucket = 'purchase-photos';
+
+  @override
+  Future<List<String>> uploadPhotos({
+    required String userId,
+    required List<Uint8List> photos,
+  }) async {
+    final urls = <String>[];
+    for (final photo in photos) {
+      final path = '$userId/${DateTime.now().microsecondsSinceEpoch}_${urls.length}.jpg';
+      await _client.storage.from(_photoBucket).uploadBinary(path, photo);
+      urls.add(_client.storage.from(_photoBucket).getPublicUrl(path));
+    }
+    return urls;
+  }
 
   @override
   Future<List<PurchaseModel>> getPurchases(String userId, PurchaseQuery query) async {
@@ -87,6 +104,7 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
       paymentType: inserted.paymentType,
       totalAmount: inserted.totalAmount,
       itemCount: items.length,
+      photos: inserted.photos,
       createdAt: inserted.createdAt,
     );
   }

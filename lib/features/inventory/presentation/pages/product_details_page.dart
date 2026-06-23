@@ -27,6 +27,7 @@ class ProductDetailsPage extends ConsumerWidget {
 
     try {
       await ref.read(deleteProductUseCaseProvider)(productId);
+      ref.invalidate(productsProvider);
       if (context.mounted) context.pop();
     } catch (e) {
       if (context.mounted) {
@@ -77,6 +78,54 @@ class _ProductDetailsBody extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
     final historyAsync = ref.watch(productSaleHistoryProvider(product.id));
+    final isWide = MediaQuery.of(context).size.width > 700;
+
+    final image = Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: product.photos.isNotEmpty
+            ? CachedNetworkImage(imageUrl: product.photos.first, fit: BoxFit.cover)
+            : Icon(Icons.inventory_2_outlined, size: 48, color: colorScheme.outline),
+      ),
+    );
+
+    final info = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(product.name, style: textTheme.displayLarge),
+        const SizedBox(height: 4),
+        Text(
+          '₺${product.salePrice.toStringAsFixed(2)}',
+          style: textTheme.displayLarge?.copyWith(color: colorScheme.primary),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _StatTile(
+                label: l10n.productDetailsStockStatus,
+                icon: Icons.inventory_2,
+                value: l10n.commonUnitsCount(product.stockQuantity),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _StatTile(
+                label: l10n.productDetailsTotalSales,
+                icon: Icons.trending_up,
+                value: l10n.commonUnitsCount(product.soldCount),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -85,59 +134,23 @@ class _ProductDetailsBody extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Flex(
-              direction: MediaQuery.of(context).size.width > 700 ? Axis.horizontal : Axis.vertical,
-              children: [
-                AspectRatio(
-                  aspectRatio: 1,
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 360),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: product.photos.isNotEmpty
-                        ? CachedNetworkImage(imageUrl: product.photos.first, fit: BoxFit.cover)
-                        : Icon(Icons.inventory_2_outlined, size: 48, color: colorScheme.outline),
-                  ),
-                ),
-                const SizedBox(width: 24, height: 24),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(product.name, style: textTheme.displayLarge),
-                      const SizedBox(height: 4),
-                      Text(
-                        '₺${product.salePrice.toStringAsFixed(2)}',
-                        style: textTheme.displayLarge?.copyWith(color: colorScheme.primary),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _StatTile(
-                              label: l10n.productDetailsStockStatus,
-                              icon: Icons.inventory_2,
-                              value: l10n.commonUnitsCount(product.stockQuantity),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _StatTile(
-                              label: l10n.productDetailsTotalSales,
-                              icon: Icons.trending_up,
-                              value: l10n.commonUnitsCount(product.soldCount),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            // Geniş ekranda yan yana (Row), dar ekranda alt alta (Column).
+            // Dar ekranda Expanded KULLANILMAZ; aksi halde dikey kaydırma
+            // içinde sınırsız yükseklik hatası oluşur ve sayfa boş kalır.
+            if (isWide)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: 320, child: image),
+                  const SizedBox(width: 24),
+                  Expanded(child: info),
+                ],
+              )
+            else ...[
+              image,
+              const SizedBox(height: 24),
+              info,
+            ],
             const SizedBox(height: 24),
             GridView.count(
               shrinkWrap: true,

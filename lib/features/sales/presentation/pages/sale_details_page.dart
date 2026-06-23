@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/confirm_dialog.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
@@ -28,6 +29,7 @@ class SaleDetailsPage extends ConsumerWidget {
 
     try {
       await ref.read(deleteSaleUseCaseProvider)(saleId);
+      ref.invalidate(salesProvider);
       if (context.mounted) context.pop();
     } catch (e) {
       if (context.mounted) {
@@ -52,6 +54,11 @@ class SaleDetailsPage extends ConsumerWidget {
         title: Text(l10n.saleDetailsTitle),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Düzenle',
+            onPressed: () => context.push(AppRoutes.saleEdit(saleId)),
+          ),
           IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _delete(context, ref)),
         ],
       ),

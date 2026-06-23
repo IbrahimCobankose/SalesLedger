@@ -16,6 +16,7 @@ class Purchase {
     this.paymentType,
     this.totalAmount = 0,
     this.itemCount = 0,
+    this.photos = const [],
     required this.createdAt,
   });
 
@@ -31,6 +32,7 @@ class Purchase {
   final String? paymentType;
   final double totalAmount;
   final int itemCount;
+  final List<String> photos;
   final DateTime createdAt;
 
   String get displaySupplierName =>
