@@ -82,9 +82,34 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Product> updateProduct(Product product) async {
+  Future<Product> updateProduct(Product product, {List<Uint8List> newPhotos = const []}) async {
     try {
-      return await _datasource.updateProduct(ProductModel.fromEntity(product));
+      final userId = _authDatasource.currentUserId;
+      // Düzenleme öncesi fotoğrafları, sonradan kaldırılanları depolamadan
+      // silebilmek için al.
+      final original = await _datasource.getProductById(product.id);
+
+      final uploaded = newPhotos.isEmpty
+          ? const <String>[]
+          : await _datasource.uploadPhotos(userId: userId, photos: newPhotos);
+      final mergedPhotos = [...product.photos, ...uploaded];
+
+      final updated = await _datasource.updateProduct(
+        ProductModel.fromEntity(product.copyWith(photos: mergedPhotos)),
+      );
+
+      final removed =
+          original.photos.where((url) => !mergedPhotos.contains(url)).toList();
+      if (removed.isNotEmpty) {
+        // En iyi çaba: depolama temizliği başarısız olsa da güncelleme geçerli.
+        try {
+          await _datasource.deletePhotos(removed);
+        } catch (_) {}
+      }
+
+      return updated;
+    } on StorageException {
+      throw const AppException('Fotoğraflar yüklenemedi. Lütfen tekrar deneyin.');
     } on PostgrestException {
       throw const AppException('Ürün güncellenemedi. Lütfen tekrar deneyin.');
     }
@@ -93,7 +118,19 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<void> deleteProduct(String id) async {
     try {
+      // Önce fotoğraf URL'lerini al; satır silindikten sonra depolamayı temizle.
+      List<String> photos = const [];
+      try {
+        photos = (await _datasource.getProductById(id)).photos;
+      } catch (_) {}
+
       await _datasource.deleteProduct(id);
+
+      if (photos.isNotEmpty) {
+        try {
+          await _datasource.deletePhotos(photos);
+        } catch (_) {}
+      }
     } on PostgrestException {
       throw const AppException('Ürün silinemedi. Lütfen tekrar deneyin.');
     }

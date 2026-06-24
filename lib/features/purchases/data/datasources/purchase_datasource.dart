@@ -20,6 +20,9 @@ abstract class PurchaseDatasource {
     required List<Uint8List> photos,
   });
 
+  /// Verilen public URL'lere karşılık gelen depolama nesnelerini siler.
+  Future<void> deletePhotos(List<String> photoUrls);
+
   Future<PurchaseModel> insertPurchase({
     required PurchaseModel purchase,
     required List<PurchaseItemDraft> items,

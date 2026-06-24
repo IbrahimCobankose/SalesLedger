@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,14 +10,21 @@ import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/custom_button.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
+import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
 import 'package:sales_ledger/features/inventory/presentation/providers/product_provider.dart';
 
 const _categories = ['Elektronik', 'Giyim & Aksesuar', 'Kırtasiye', 'Diğer'];
 const _maxPhotos = AppLimits.maxProductPhotos;
 
-/// ürün_ekle.html taslağına karşılık gelen ürün ekleme formu.
+/// ürün_ekle.html taslağına karşılık gelen ürün ekleme/düzenleme formu.
+/// [productId] verilirse mevcut ürün yüklenip düzenleme modunda açılır
+/// (gereksinim 4.2.3).
 class AddProductPage extends ConsumerStatefulWidget {
-  const AddProductPage({super.key});
+  const AddProductPage({super.key, this.productId});
+
+  final String? productId;
+
+  bool get isEditing => productId != null;
 
   @override
   ConsumerState<AddProductPage> createState() => _AddProductPageState();
@@ -38,7 +46,62 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
 
   String? _category;
   final List<Uint8List> _photos = [];
+
+  /// Düzenleme modunda korunan mevcut fotoğrafların URL'leri.
+  final List<String> _existingPhotoUrls = [];
+  Product? _original;
+  bool _isLoadingExisting = false;
   bool _isPickingPhotos = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.productId != null) {
+      _isLoadingExisting = true;
+      _loadExisting();
+    }
+  }
+
+  Future<void> _loadExisting() async {
+    try {
+      final product = await ref.read(getProductByIdUseCaseProvider)(widget.productId!);
+      if (!mounted) return;
+      setState(() {
+        _original = product;
+        _nameController.text = product.name;
+        _salePriceController.text = _numText(product.salePrice);
+        if (product.productionCost != null) {
+          _costPriceController.text = _numText(product.productionCost!);
+        }
+        _initialStockController.text = product.stockQuantity.toString();
+        if (product.weight != null) _weightController.text = _numText(product.weight!);
+        if (product.length != null) _lengthController.text = _numText(product.length!);
+        if (product.width != null) _widthController.text = _numText(product.width!);
+        if (product.height != null) _heightController.text = _numText(product.height!);
+        _descriptionController.text = product.description ?? '';
+        _notesController.text = product.notes ?? '';
+        _tagsController.text = product.tags.join(', ');
+        _category = _categories.contains(product.category) ? product.category : null;
+        _existingPhotoUrls
+          ..clear()
+          ..addAll(product.photos);
+        _isLoadingExisting = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingExisting = false);
+        CustomSnackbar.show(context, message: 'Ürün yüklenemedi.', isError: true);
+      }
+    }
+  }
+
+  /// Gereksiz ondalık sıfırları gizler: 12.0 → "12", 12.5 → "12.5".
+  static String _numText(num value) {
+    final text = value.toString();
+    return text.endsWith('.0') ? text.substring(0, text.length - 2) : text;
+  }
+
+  int get _totalPhotoCount => _existingPhotoUrls.length + _photos.length;
 
   @override
   void dispose() {
@@ -57,7 +120,7 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
   }
 
   Future<void> _pickPhotos() async {
-    final remaining = _maxPhotos - _photos.length;
+    final remaining = _maxPhotos - _totalPhotoCount;
     if (remaining <= 0) return;
 
     // image_picker, önceki çağrı tamamlanmadan tekrar tetiklenirse
@@ -66,7 +129,11 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
     if (_isPickingPhotos) return;
     _isPickingPhotos = true;
     try {
-      final picked = await ImagePicker().pickMultiImage(maxWidth: 1600, imageQuality: 85);
+      final picked = await ImagePicker().pickMultiImage(
+        maxWidth: AppLimits.photoMaxDimension,
+        maxHeight: AppLimits.photoMaxDimension,
+        imageQuality: AppLimits.photoQuality,
+      );
       final selected = picked.take(remaining);
       var skippedForSize = false;
 
@@ -105,7 +172,7 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_photos.isEmpty) {
+    if (_totalPhotoCount == 0) {
       CustomSnackbar.show(context, message: context.l10n.addProductPhotoRequired, isError: true);
       return;
     }
@@ -116,23 +183,44 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
         .where((tag) => tag.isNotEmpty)
         .toList();
 
-    final success = await ref.read(addProductControllerProvider.notifier).addProduct(
-          name: _nameController.text.trim(),
-          salePrice: double.parse(_salePriceController.text.trim()),
-          photos: _photos,
-          productionCost: _parseDouble(_costPriceController.text),
-          category: _category,
-          initialStock: int.tryParse(_initialStockController.text.trim()) ?? 0,
-          length: _parseDouble(_lengthController.text),
-          width: _parseDouble(_widthController.text),
-          height: _parseDouble(_heightController.text),
-          weight: _parseDouble(_weightController.text),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-          tags: tags,
-        );
+    final description =
+        _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim();
+    final notes = _notesController.text.trim().isEmpty ? null : _notesController.text.trim();
+    final controller = ref.read(addProductControllerProvider.notifier);
+
+    final success = widget.productId == null
+        ? await controller.addProduct(
+            name: _nameController.text.trim(),
+            salePrice: double.parse(_salePriceController.text.trim()),
+            photos: _photos,
+            productionCost: _parseDouble(_costPriceController.text),
+            category: _category,
+            initialStock: int.tryParse(_initialStockController.text.trim()) ?? 0,
+            length: _parseDouble(_lengthController.text),
+            width: _parseDouble(_widthController.text),
+            height: _parseDouble(_heightController.text),
+            weight: _parseDouble(_weightController.text),
+            description: description,
+            notes: notes,
+            tags: tags,
+          )
+        : await controller.updateProduct(
+            original: _original!,
+            name: _nameController.text.trim(),
+            salePrice: double.parse(_salePriceController.text.trim()),
+            keptPhotoUrls: _existingPhotoUrls,
+            newPhotos: _photos,
+            productionCost: _parseDouble(_costPriceController.text),
+            category: _category,
+            stockQuantity: int.tryParse(_initialStockController.text.trim()),
+            length: _parseDouble(_lengthController.text),
+            width: _parseDouble(_widthController.text),
+            height: _parseDouble(_heightController.text),
+            weight: _parseDouble(_weightController.text),
+            description: description,
+            notes: notes,
+            tags: tags,
+          );
 
     if (!mounted) return;
 
@@ -156,8 +244,13 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(title: Text(l10n.addProductTitle), centerTitle: true),
-      body: SafeArea(
+      appBar: AppBar(
+        title: Text(widget.isEditing ? 'Ürünü Düzenle' : l10n.addProductTitle),
+        centerTitle: true,
+      ),
+      body: _isLoadingExisting
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -228,7 +321,10 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
                         TextFormField(
                           controller: _initialStockController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(labelText: l10n.addProductInitialStock),
+                          decoration: InputDecoration(
+                            labelText:
+                                widget.isEditing ? 'Stok Adedi' : l10n.addProductInitialStock,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -307,7 +403,9 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: PrimaryButton(
-                            label: l10n.addProductSubmit,
+                            label: widget.isEditing
+                                ? 'Değişiklikleri Kaydet'
+                                : l10n.addProductSubmit,
                             icon: Icons.save_outlined,
                             isLoading: isLoading,
                             onPressed: _submit,
@@ -339,28 +437,24 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (var i = 0; i < _photos.length; i++)
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.memory(_photos[i], width: 80, height: 80, fit: BoxFit.cover),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: () => setState(() => _photos.removeAt(i)),
-                        child: CircleAvatar(
-                          radius: 10,
-                          backgroundColor: colorScheme.error,
-                          child: Icon(Icons.close, size: 14, color: colorScheme.onError),
-                        ),
-                      ),
-                    ),
-                  ],
+              for (var i = 0; i < _existingPhotoUrls.length; i++)
+                _PhotoThumb(
+                  colorScheme: colorScheme,
+                  onRemove: () => setState(() => _existingPhotoUrls.removeAt(i)),
+                  child: CachedNetworkImage(
+                    imageUrl: _existingPhotoUrls[i],
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              if (_photos.length < _maxPhotos)
+              for (var i = 0; i < _photos.length; i++)
+                _PhotoThumb(
+                  colorScheme: colorScheme,
+                  onRemove: () => setState(() => _photos.removeAt(i)),
+                  child: Image.memory(_photos[i], width: 80, height: 80, fit: BoxFit.cover),
+                ),
+              if (_totalPhotoCount < _maxPhotos)
                 GestureDetector(
                   onTap: _pickPhotos,
                   child: Container(
@@ -378,7 +472,7 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.addProductPhotoCounter(_photos.length, _maxPhotos),
+            l10n.addProductPhotoCounter(_totalPhotoCount, _maxPhotos),
             style: Theme.of(context).textTheme.labelSmall,
           ),
         ],
@@ -412,6 +506,40 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
           ...children,
         ],
       ),
+    );
+  }
+}
+
+/// 80x80 fotoğraf küçük resmi; sağ üstte silme düğmesi içerir.
+class _PhotoThumb extends StatelessWidget {
+  const _PhotoThumb({
+    required this.child,
+    required this.onRemove,
+    required this.colorScheme,
+  });
+
+  final Widget child;
+  final VoidCallback onRemove;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        ClipRRect(borderRadius: BorderRadius.circular(8), child: child),
+        Positioned(
+          top: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: onRemove,
+            child: CircleAvatar(
+              radius: 10,
+              backgroundColor: colorScheme.error,
+              child: Icon(Icons.close, size: 14, color: colorScheme.onError),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -94,6 +94,27 @@ class ProductSupabaseDatasource implements ProductDatasource {
   }
 
   @override
+  Future<void> deletePhotos(List<String> photoUrls) async {
+    final paths = _storagePathsFromUrls(photoUrls, _photoBucket);
+    if (paths.isNotEmpty) {
+      await _client.storage.from(_photoBucket).remove(paths);
+    }
+  }
+
+  /// Public URL'den bucket içi göreli yolu çıkarır:
+  /// `.../object/public/<bucket>/<path>` → `<path>`.
+  static List<String> _storagePathsFromUrls(List<String> urls, String bucket) {
+    final marker = '/object/public/$bucket/';
+    final paths = <String>[];
+    for (final url in urls) {
+      final index = url.indexOf(marker);
+      if (index == -1) continue;
+      paths.add(Uri.decodeComponent(url.substring(index + marker.length)));
+    }
+    return paths;
+  }
+
+  @override
   Future<List<ProductSaleHistoryItemModel>> getSaleHistory(String productId) async {
     final rows = await _client
         .from('sale_items')

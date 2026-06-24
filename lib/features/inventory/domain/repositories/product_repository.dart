@@ -28,7 +28,10 @@ abstract class ProductRepository {
     List<String> tags = const [],
   });
 
-  Future<Product> updateProduct(Product product);
+  /// [product.photos] korunan mevcut fotoğraf URL'lerini içerir; [newPhotos]
+  /// verilirse yüklenip mevcutların sonuna eklenir. Düzenleme sırasında
+  /// kaldırılan fotoğraflar depolama alanından da silinir.
+  Future<Product> updateProduct(Product product, {List<Uint8List> newPhotos = const []});
 
   Future<void> deleteProduct(String id);
 

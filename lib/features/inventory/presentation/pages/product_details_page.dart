@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/confirm_dialog.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
@@ -52,6 +53,11 @@ class ProductDetailsPage extends ConsumerWidget {
         title: Text(l10n.productDetailsTitle),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Düzenle',
+            onPressed: () => context.push(AppRoutes.productEdit(productId)),
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _delete(context, ref),

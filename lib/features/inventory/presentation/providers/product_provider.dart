@@ -162,6 +162,59 @@ class AddProductController extends AsyncNotifier<void> {
       return false;
     }
   }
+
+  /// Mevcut ürünü günceller. [original] düzenlenen ürünün son halidir;
+  /// [keptPhotoUrls] formda korunan mevcut fotoğraflar, [newPhotos] yeni
+  /// eklenenlerdir. Opsiyonel alanlara `null` verilirse alan temizlenir.
+  Future<bool> updateProduct({
+    required Product original,
+    required String name,
+    required double salePrice,
+    required List<String> keptPhotoUrls,
+    List<Uint8List> newPhotos = const [],
+    double? productionCost,
+    String? category,
+    int? stockQuantity,
+    double? length,
+    double? width,
+    double? height,
+    double? weight,
+    String? description,
+    String? notes,
+    List<String> tags = const [],
+  }) async {
+    state = const AsyncLoading();
+    try {
+      final updated = Product(
+        id: original.id,
+        userId: original.userId,
+        name: name,
+        salePrice: salePrice,
+        productionCost: productionCost,
+        length: length,
+        width: width,
+        height: height,
+        weight: weight,
+        description: description,
+        stockQuantity: stockQuantity ?? original.stockQuantity,
+        soldCount: original.soldCount,
+        notes: notes,
+        photos: keptPhotoUrls,
+        category: category,
+        tags: tags,
+        createdAt: original.createdAt,
+      );
+      await ref.read(updateProductUseCaseProvider)(updated, newPhotos: newPhotos);
+      state = const AsyncData(null);
+      ref.invalidate(productsProvider);
+      ref.invalidate(productDetailsProvider(original.id));
+      ref.invalidate(productSaleHistoryProvider(original.id));
+      return true;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      return false;
+    }
+  }
 }
 
 final addProductControllerProvider = AsyncNotifierProvider<AddProductController, void>(

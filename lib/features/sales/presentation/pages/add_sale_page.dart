@@ -59,6 +59,22 @@ const _months = [
 String _formatDate(DateTime date) =>
     '${date.day.toString().padLeft(2, '0')} ${_months[date.month - 1]} ${date.year}';
 
+/// 5 kargo durumunun tamamı için etiket. Bilinen üçü yerelleştirilir;
+/// "Geciken Kargo" ve "İptal Edildi" için [CargoStatus.label] kullanılır.
+String _cargoStatusLabel(AppLocalizations l10n, CargoStatus status) {
+  switch (status) {
+    case CargoStatus.packaging:
+      return l10n.addSaleStatusPreparing;
+    case CargoStatus.shipped:
+      return l10n.addSaleStatusShipped;
+    case CargoStatus.completed:
+      return l10n.addSaleStatusDelivered;
+    case CargoStatus.delayed:
+    case CargoStatus.canceled:
+      return status.label;
+  }
+}
+
 /// satış_ekle.html taslağına karşılık gelen satış ekleme/düzenleme formu.
 /// [saleId] verilirse mevcut satış yüklenip düzenleme modunda açılır.
 class AddSalePage extends ConsumerStatefulWidget {
@@ -326,22 +342,35 @@ class _AddSalePageState extends ConsumerState<AddSalePage> {
                           initialValue: _cargoStatus,
                           decoration: InputDecoration(labelText: l10n.addSaleCargoStatus),
                           items: [
-                            DropdownMenuItem(
-                              value: CargoStatus.packaging,
-                              child: Text(l10n.addSaleStatusPreparing),
-                            ),
-                            DropdownMenuItem(
-                              value: CargoStatus.shipped,
-                              child: Text(l10n.addSaleStatusShipped),
-                            ),
-                            DropdownMenuItem(
-                              value: CargoStatus.completed,
-                              child: Text(l10n.addSaleStatusDelivered),
-                            ),
+                            for (final status in CargoStatus.values)
+                              DropdownMenuItem(
+                                value: status,
+                                child: Text(_cargoStatusLabel(l10n, status)),
+                              ),
                           ],
                           onChanged: (value) {
                             if (value != null) setState(() => _cargoStatus = value);
                           },
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'Yalnızca "Satış Tamamlandı" durumundaki satışlar kasaya gelir olarak işlenir.',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: Theme.of(context).colorScheme.outline,
+                                    ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         TextFormField(

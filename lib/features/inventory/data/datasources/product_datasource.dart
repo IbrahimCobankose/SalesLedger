@@ -22,5 +22,9 @@ abstract class ProductDatasource {
     required List<Uint8List> photos,
   });
 
+  /// Verilen genel (public) URL'lere karşılık gelen depolama nesnelerini
+  /// siler. Ürün/fotoğraf silindiğinde depolama alanının şişmesini önler.
+  Future<void> deletePhotos(List<String> photoUrls);
+
   Future<List<ProductSaleHistoryItemModel>> getSaleHistory(String productId);
 }

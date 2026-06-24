@@ -41,6 +41,7 @@ abstract class AppRoutes {
   static const settings = '/settings';
 
   static String productDetails(String id) => '/products/$id';
+  static String productEdit(String id) => '/products/edit/$id';
   static String purchaseDetails(String id) => '/purchase-details/$id';
   static String saleDetails(String id) => '/sale-details/$id';
   static String saleEdit(String id) => '/sales/edit/$id';
@@ -117,6 +118,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.addProduct,
         builder: (context, state) => const AddProductPage(),
+      ),
+      GoRoute(
+        path: '/products/edit/:id',
+        builder: (context, state) => AddProductPage(productId: state.pathParameters['id']),
       ),
       GoRoute(
         path: '/products/:id',

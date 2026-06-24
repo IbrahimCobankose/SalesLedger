@@ -110,6 +110,20 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
   }
 
   @override
+  Future<void> deletePhotos(List<String> photoUrls) async {
+    final marker = '/object/public/$_photoBucket/';
+    final paths = <String>[];
+    for (final url in photoUrls) {
+      final index = url.indexOf(marker);
+      if (index == -1) continue;
+      paths.add(Uri.decodeComponent(url.substring(index + marker.length)));
+    }
+    if (paths.isNotEmpty) {
+      await _client.storage.from(_photoBucket).remove(paths);
+    }
+  }
+
+  @override
   Future<void> deletePurchase(String id) async {
     await _client.from('purchases').delete().eq('id', id);
   }

@@ -9,6 +9,9 @@ import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/custom_button.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
+import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
+import 'package:sales_ledger/features/inventory/domain/entities/product_query.dart';
+import 'package:sales_ledger/features/inventory/presentation/providers/product_provider.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item_draft.dart';
 import 'package:sales_ledger/features/purchases/presentation/providers/purchase_provider.dart';
 
@@ -31,11 +34,16 @@ class _ItemRow {
   _ItemRow()
       : nameController = TextEditingController(),
         priceController = TextEditingController(),
-        quantityController = TextEditingController(text: '1');
+        quantityController = TextEditingController(text: '1'),
+        focusNode = FocusNode();
 
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController quantityController;
+  final FocusNode focusNode;
+
+  /// Envanterden seçilen ürünün kimliği; elle yazılmışsa null.
+  String? productId;
 
   double get lineTotal {
     final price = double.tryParse(priceController.text.trim()) ?? 0;
@@ -47,6 +55,7 @@ class _ItemRow {
     nameController.dispose();
     priceController.dispose();
     quantityController.dispose();
+    focusNode.dispose();
   }
 }
 
@@ -96,7 +105,11 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
     if (_isPickingPhotos) return;
     _isPickingPhotos = true;
     try {
-      final picked = await ImagePicker().pickMultiImage(maxWidth: 1600, imageQuality: 85);
+      final picked = await ImagePicker().pickMultiImage(
+        maxWidth: AppLimits.photoMaxDimension,
+        maxHeight: AppLimits.photoMaxDimension,
+        imageQuality: AppLimits.photoQuality,
+      );
       var skippedForSize = false;
       for (final file in picked.take(remaining)) {
         final bytes = await file.readAsBytes();
@@ -141,6 +154,7 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
             name: item.nameController.text.trim(),
             unitPrice: double.parse(item.priceController.text.trim()),
             quantity: int.parse(item.quantityController.text.trim()),
+            productId: item.productId,
           ),
         )
         .toList();
@@ -314,19 +328,7 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
         children: [
           Row(
             children: [
-              Expanded(
-                child: TextFormField(
-                  controller: item.nameController,
-                  decoration: InputDecoration(
-                    labelText: l10n.commonProduct,
-                    hintText: l10n.addPurchaseProductHint,
-                    prefixIcon: const Icon(Icons.search),
-                  ),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? l10n.commonProductNameRequired : null,
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
+              Expanded(child: _buildProductPicker(item, l10n)),
               if (_items.length > 1)
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -368,6 +370,86 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Envanterden ürün arayıp seçmeyi sağlayan alan (satış formundaki ile
+  /// aynı davranış). Seçilince ürün adı ve [_ItemRow.productId] otomatik
+  /// dolar; varsa üretim maliyeti alış fiyatına ön-doldurulur. Elle
+  /// yazılırsa serbest metin (envanter bağlantısız) kabul edilir.
+  Widget _buildProductPicker(_ItemRow item, AppLocalizations l10n) {
+    return RawAutocomplete<Product>(
+      textEditingController: item.nameController,
+      focusNode: item.focusNode,
+      optionsBuilder: (TextEditingValue value) async {
+        final query = value.text.trim();
+        if (query.isEmpty) return const Iterable<Product>.empty();
+        try {
+          return await ref.read(productRepositoryProvider).getProducts(
+                ProductQuery(search: query, pageSize: 8),
+              );
+        } catch (_) {
+          return const Iterable<Product>.empty();
+        }
+      },
+      displayStringForOption: (product) => product.name,
+      onSelected: (product) {
+        item.productId = product.id;
+        if (item.priceController.text.trim().isEmpty && product.productionCost != null) {
+          item.priceController.text = product.productionCost!.toStringAsFixed(2);
+        }
+        setState(() {});
+      },
+      fieldViewBuilder: (context, textController, focusNode, onFieldSubmitted) {
+        return TextFormField(
+          controller: textController,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: l10n.commonProduct,
+            hintText: l10n.addPurchaseProductHint,
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: item.productId != null
+                ? Icon(Icons.link, size: 18, color: Theme.of(context).colorScheme.primary)
+                : null,
+          ),
+          validator: (value) =>
+              (value == null || value.trim().isEmpty) ? l10n.commonProductNameRequired : null,
+          onChanged: (_) {
+            // Kullanıcı adı elle değiştirdiyse envanter bağlantısını kaldır.
+            if (item.productId != null) item.productId = null;
+            setState(() {});
+          },
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 240, maxWidth: 400),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, i) {
+                  final product = options.elementAt(i);
+                  return ListTile(
+                    leading: Icon(Icons.inventory_2_outlined, color: colorScheme.primary),
+                    title: Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(
+                      '₺${product.salePrice.toStringAsFixed(2)} · ${l10n.commonUnitsCount(product.stockQuantity)}',
+                    ),
+                    onTap: () => onSelected(product),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

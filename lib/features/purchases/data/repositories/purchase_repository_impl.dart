@@ -91,7 +91,19 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
   @override
   Future<void> deletePurchase(String id) async {
     try {
+      // Önce fotoğraf URL'lerini al; satır silindikten sonra depolamayı temizle.
+      List<String> photos = const [];
+      try {
+        photos = (await _datasource.getPurchaseById(id)).photos;
+      } catch (_) {}
+
       await _datasource.deletePurchase(id);
+
+      if (photos.isNotEmpty) {
+        try {
+          await _datasource.deletePhotos(photos);
+        } catch (_) {}
+      }
     } on PostgrestException {
       throw const AppException('Alış silinemedi. Lütfen tekrar deneyin.');
     }
