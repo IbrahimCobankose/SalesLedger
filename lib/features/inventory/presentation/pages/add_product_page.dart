@@ -91,7 +91,7 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
     } catch (_) {
       if (mounted) {
         setState(() => _isLoadingExisting = false);
-        CustomSnackbar.show(context, message: 'Ürün yüklenemedi.', isError: true);
+        CustomSnackbar.show(context, message: context.l10n.productDetailsLoadFailed, isError: true);
       }
     }
   }
@@ -159,7 +159,7 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
       if (mounted) {
         CustomSnackbar.show(
           context,
-          message: 'Fotoğraf seçilemedi. Lütfen tekrar deneyin.',
+          message: context.l10n.commonPhotoPickFailed,
           isError: true,
         );
       }

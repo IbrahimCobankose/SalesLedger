@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:sales_ledger/core/storage/image_compressor.dart';
 import 'package:sales_ledger/core/storage/storage_buckets.dart';
 import 'package:sales_ledger/features/auth/data/datasources/profile_datasource.dart';
 import 'package:sales_ledger/features/auth/data/models/profile_model.dart';
@@ -66,15 +67,17 @@ class ProfileSupabaseDatasource implements ProfileDatasource {
     required Uint8List bytes,
     required String fileExtension,
   }) async {
-    final ext = fileExtension.toLowerCase();
-    final contentType = _mimeType(ext);
-    final path = '$userId/${DateTime.now().microsecondsSinceEpoch}.$ext';
+    // Avatar da WebP'e sıkıştırılır (web'de JPEG kalır). [fileExtension] artık
+    // kullanılmıyor; içerik türü sıkıştırma sonucuna göre belirlenir.
+    final compressed = await ImageCompressor.toWebp(bytes);
+    final path =
+        '$userId/${DateTime.now().microsecondsSinceEpoch}.${ImageCompressor.fileExtension}';
 
     await _client.storage.from(_avatarBucket).uploadBinary(
       path,
-      bytes,
+      compressed,
       fileOptions: FileOptions(
-        contentType: contentType,
+        contentType: ImageCompressor.contentType,
         upsert: true,
       ),
     );
@@ -82,22 +85,5 @@ class ProfileSupabaseDatasource implements ProfileDatasource {
     // Bucket gizli; DB'de bucket içi göreli path saklanır, görüntülemede
     // imzalı URL üretilir.
     return path;
-  }
-
-  /// Dosya uzantısından MIME türü üretir.
-  static String _mimeType(String ext) {
-    switch (ext) {
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'webp':
-        return 'image/webp';
-      case 'heic':
-      case 'heif':
-        return 'image/heic';
-      default:
-        return 'image/jpeg';
-    }
   }
 }

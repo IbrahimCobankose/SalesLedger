@@ -112,7 +112,7 @@ class ProfileSelectionPage extends ConsumerWidget {
                                 if (context.mounted) {
                                   CustomSnackbar.show(
                                     context,
-                                    message: 'Profil silinemedi. Lütfen tekrar deneyin.',
+                                    message: context.l10n.profileDeleteFailed,
                                     isError: true,
                                   );
                                 }

@@ -170,6 +170,36 @@ abstract class AppLocalizations {
   /// **'Export failed.'**
   String get commonExportFailed;
 
+  /// No description provided for @commonExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get commonExport;
+
+  /// No description provided for @reportFormatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Report Format'**
+  String get reportFormatTitle;
+
+  /// No description provided for @reportFormatExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Excel (.xlsx)'**
+  String get reportFormatExcel;
+
+  /// No description provided for @reportFormatWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Word (.docx)'**
+  String get reportFormatWord;
+
+  /// No description provided for @reportFormatPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF (.pdf)'**
+  String get reportFormatPdf;
+
   /// No description provided for @commonUnitsCount.
   ///
   /// In en, this message translates to:
@@ -247,6 +277,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Another Product'**
   String get commonAddAnotherProduct;
+
+  /// No description provided for @commonEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get commonEdit;
+
+  /// No description provided for @commonPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get commonPhotos;
+
+  /// No description provided for @commonPhotoPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not pick photo. Please try again.'**
+  String get commonPhotoPickFailed;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsProfileSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get settingsProfileSection;
+
+  /// No description provided for @settingsLanguageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageSection;
+
+  /// No description provided for @settingsAccountSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & App'**
+  String get settingsAccountSection;
+
+  /// No description provided for @settingsBackupSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get settingsBackupSection;
+
+  /// No description provided for @settingsBackupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You can save all your data (products, sales, purchases, customers, suppliers) to a single file and keep it on your device. Photos stay in the cloud.'**
+  String get settingsBackupDescription;
+
+  /// No description provided for @settingsBackupExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get settingsBackupExport;
+
+  /// No description provided for @settingsBackupSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved: {path}'**
+  String settingsBackupSuccess(Object path);
+
+  /// No description provided for @settingsBackupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create backup. Please try again.'**
+  String get settingsBackupFailed;
+
+  /// No description provided for @settingsProfileNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Name'**
+  String get settingsProfileNameLabel;
+
+  /// No description provided for @settingsProfileNameEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile name cannot be empty.'**
+  String get settingsProfileNameEmpty;
+
+  /// No description provided for @settingsProfileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get settingsProfileUpdated;
+
+  /// No description provided for @settingsProfileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update profile. Please try again.'**
+  String get settingsProfileUpdateFailed;
+
+  /// No description provided for @settingsEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get settingsEmailLabel;
+
+  /// No description provided for @settingsAppVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get settingsAppVersion;
+
+  /// No description provided for @inventoryFavoriteAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get inventoryFavoriteAdd;
+
+  /// No description provided for @inventoryFavoriteRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get inventoryFavoriteRemove;
+
+  /// No description provided for @addPurchasePhotosOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos (optional)'**
+  String get addPurchasePhotosOptional;
 
   /// No description provided for @navInventory.
   ///
@@ -475,6 +631,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add New Profile'**
   String get profileSelectionAddNew;
+
+  /// No description provided for @profileDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete profile. Please try again.'**
+  String get profileDeleteFailed;
+
+  /// No description provided for @forgotPasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Reset Link'**
+  String get forgotPasswordSubmit;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get backToLogin;
+
+  /// No description provided for @emailVerificationResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification email resent.'**
+  String get emailVerificationResent;
+
+  /// No description provided for @emailVerificationResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get emailVerificationResend;
 
   /// No description provided for @profileSelectionAddNewSubtitle.
   ///

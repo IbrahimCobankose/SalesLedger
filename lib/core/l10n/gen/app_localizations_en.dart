@@ -47,6 +47,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonExportFailed => 'Export failed.';
 
   @override
+  String get commonExport => 'Export';
+
+  @override
+  String get reportFormatTitle => 'Choose Report Format';
+
+  @override
+  String get reportFormatExcel => 'Excel (.xlsx)';
+
+  @override
+  String get reportFormatWord => 'Word (.docx)';
+
+  @override
+  String get reportFormatPdf => 'PDF (.pdf)';
+
+  @override
   String commonUnitsCount(Object count) {
     return '$count units';
   }
@@ -86,6 +101,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonAddAnotherProduct => 'Add Another Product';
+
+  @override
+  String get commonEdit => 'Edit';
+
+  @override
+  String get commonPhotos => 'Photos';
+
+  @override
+  String get commonPhotoPickFailed => 'Could not pick photo. Please try again.';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsProfileSection => 'Profile';
+
+  @override
+  String get settingsLanguageSection => 'Language';
+
+  @override
+  String get settingsAccountSection => 'Account & App';
+
+  @override
+  String get settingsBackupSection => 'Backup';
+
+  @override
+  String get settingsBackupDescription =>
+      'You can save all your data (products, sales, purchases, customers, suppliers) to a single file and keep it on your device. Photos stay in the cloud.';
+
+  @override
+  String get settingsBackupExport => 'Export Data';
+
+  @override
+  String settingsBackupSuccess(Object path) {
+    return 'Backup saved: $path';
+  }
+
+  @override
+  String get settingsBackupFailed =>
+      'Could not create backup. Please try again.';
+
+  @override
+  String get settingsProfileNameLabel => 'Profile Name';
+
+  @override
+  String get settingsProfileNameEmpty => 'Profile name cannot be empty.';
+
+  @override
+  String get settingsProfileUpdated => 'Profile updated.';
+
+  @override
+  String get settingsProfileUpdateFailed =>
+      'Could not update profile. Please try again.';
+
+  @override
+  String get settingsEmailLabel => 'Email';
+
+  @override
+  String get settingsAppVersion => 'App Version';
+
+  @override
+  String get inventoryFavoriteAdd => 'Add to favorites';
+
+  @override
+  String get inventoryFavoriteRemove => 'Remove from favorites';
+
+  @override
+  String get addPurchasePhotosOptional => 'Photos (optional)';
 
   @override
   String get navInventory => 'Inventory';
@@ -204,6 +287,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileSelectionAddNew => 'Add New Profile';
+
+  @override
+  String get profileDeleteFailed =>
+      'Could not delete profile. Please try again.';
+
+  @override
+  String get forgotPasswordSubmit => 'Send Reset Link';
+
+  @override
+  String get backToLogin => 'Back to Login';
+
+  @override
+  String get emailVerificationResent => 'Verification email resent.';
+
+  @override
+  String get emailVerificationResend => 'Resend';
 
   @override
   String get profileSelectionAddNewSubtitle =>

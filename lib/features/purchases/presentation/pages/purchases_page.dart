@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/core/utils/debouncer.dart';
-import 'package:sales_ledger/core/utils/excel_exporter.dart';
+import 'package:sales_ledger/core/reports/report_data.dart';
+import 'package:sales_ledger/core/reports/report_exporters.dart';
+import 'package:sales_ledger/core/reports/report_format_picker.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/core/widgets/main_top_bar.dart';
 import 'package:sales_ledger/core/widgets/profile_filter_dropdown.dart';
@@ -64,22 +66,38 @@ class _PurchasesPageState extends ConsumerState<PurchasesPage> {
       appBar: MainTopBar(
         actions: [
           IconButton(
-            icon: const Icon(Icons.table_view_outlined),
-            tooltip: l10n.commonExportExcel,
+            icon: const Icon(Icons.ios_share),
+            tooltip: l10n.commonExport,
             onPressed: () async {
               final purchases = purchasesAsync.valueOrNull ?? const [];
               if (purchases.isEmpty) {
                 CustomSnackbar.show(context, message: l10n.purchasesNoExportData, isError: true);
                 return;
               }
+              final format = await showReportFormatPicker(context);
+              if (format == null || !context.mounted) return;
               try {
-                final path = await ExcelExporter.exportPurchases(purchases);
+                final data = ReportData(
+                  fileBaseName: 'alimlar',
+                  title: 'Alımlar Raporu',
+                  headers: const [
+                    'Tedarikçi', 'Tarih', 'Durum', 'Ödeme Tipi', 'Kalem', 'Toplam Tutar',
+                  ],
+                  rows: [
+                    for (final p in purchases)
+                      [
+                        p.displaySupplierName,
+                        p.purchaseDate.toIso8601String().split('T').first,
+                        p.status.label,
+                        p.paymentType ?? '',
+                        p.itemCount.toString(),
+                        p.totalAmount.toStringAsFixed(2),
+                      ],
+                  ],
+                );
+                final path = await ReportExporter.export(data, format);
                 if (context.mounted) {
-                  CustomSnackbar.show(
-                    context,
-                    message: l10n.purchasesExportSuccess(path),
-                    isError: false,
-                  );
+                  CustomSnackbar.show(context, message: l10n.purchasesExportSuccess(path), isError: false);
                 }
               } catch (_) {
                 if (context.mounted) {

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sales_ledger/core/backup/backup_service.dart';
 import 'package:sales_ledger/core/constants/app_limits.dart';
+import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/l10n/locale_provider.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
 import 'package:sales_ledger/core/storage/storage_image.dart';
@@ -60,7 +61,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (mounted) {
         CustomSnackbar.show(
           context,
-          message: 'Fotoğraf seçilemedi. Lütfen tekrar deneyin.',
+          message: context.l10n.commonPhotoPickFailed,
           isError: true,
         );
       }
@@ -75,7 +76,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     final newName = _nameController.text.trim();
     if (newName.isEmpty) {
-      CustomSnackbar.show(context, message: 'Profil adı boş olamaz.', isError: true);
+      CustomSnackbar.show(context, message: context.l10n.settingsProfileNameEmpty, isError: true);
       return;
     }
 
@@ -90,13 +91,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       ref.read(selectedProfileProvider.notifier).select(updated);
       if (mounted) {
         setState(() => _newAvatarBytes = null);
-        CustomSnackbar.show(context, message: 'Profil güncellendi.', isError: false);
+        CustomSnackbar.show(context, message: context.l10n.settingsProfileUpdated, isError: false);
       }
     } catch (e) {
       if (mounted) {
         CustomSnackbar.show(
           context,
-          message: e is AppException ? e.message : 'Profil güncellenemedi. Lütfen tekrar deneyin.',
+          message: e is AppException ? e.message : context.l10n.settingsProfileUpdateFailed,
           isError: true,
         );
       }
@@ -111,13 +112,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     try {
       final path = await BackupService.exportAll();
       if (mounted) {
-        CustomSnackbar.show(context, message: 'Yedek kaydedildi: $path', isError: false);
+        CustomSnackbar.show(context, message: context.l10n.settingsBackupSuccess(path), isError: false);
       }
     } catch (e) {
       if (mounted) {
         CustomSnackbar.show(
           context,
-          message: e is AppException ? e.message : 'Yedek oluşturulamadı. Lütfen tekrar deneyin.',
+          message: e is AppException ? e.message : context.l10n.settingsBackupFailed,
           isError: true,
         );
       }
@@ -130,6 +131,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = context.l10n;
     final profile = ref.watch(selectedProfileProvider);
     final locale = ref.watch(localeProvider);
     final email = supabase.auth.currentUser?.email ?? '';
@@ -142,7 +144,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(title: const Text('Ayarlar'), centerTitle: true),
+      appBar: AppBar(title: Text(l10n.settingsTitle), centerTitle: true),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -154,7 +156,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 children: [
                   // --- Profil düzenleme ---
                   _Section(
-                    title: 'Profil',
+                    title: l10n.settingsProfileSection,
                     icon: Icons.account_circle_outlined,
                     children: [
                       Center(
@@ -194,14 +196,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       TextField(
                         controller: _nameController,
                         maxLength: AppLimits.maxProfileNameLength,
-                        decoration: const InputDecoration(
-                          labelText: 'Profil Adı',
+                        decoration: InputDecoration(
+                          labelText: l10n.settingsProfileNameLabel,
                           counterText: '',
                         ),
                       ),
                       const SizedBox(height: 8),
                       PrimaryButton(
-                        label: 'Kaydet',
+                        label: l10n.commonSave,
                         isLoading: _isSaving,
                         onPressed: _saveProfile,
                       ),
@@ -211,7 +213,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
                   // --- Dil seçimi ---
                   _Section(
-                    title: 'Dil',
+                    title: l10n.settingsLanguageSection,
                     icon: Icons.language,
                     children: [
                       SegmentedButton<String>(
@@ -230,18 +232,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
                   // --- Yedekleme (salt dışa aktarma) ---
                   _Section(
-                    title: 'Yedekleme',
+                    title: l10n.settingsBackupSection,
                     icon: Icons.backup_outlined,
                     children: [
                       Text(
-                        'Tüm verilerinizi (ürün, satış, alım, müşteri, tedarikçi) '
-                        'tek bir dosyaya kaydedip cihazınızda saklayabilirsiniz. '
-                        'Fotoğraflar buluttaki yerinde kalır.',
+                        l10n.settingsBackupDescription,
                         style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 12),
                       PrimaryButton(
-                        label: 'Verileri Dışa Aktar',
+                        label: l10n.settingsBackupExport,
                         isLoading: _isBackingUp,
                         onPressed: _exportBackup,
                       ),
@@ -251,12 +251,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
                   // --- Hesap / Uygulama bilgisi ---
                   _Section(
-                    title: 'Hesap & Uygulama',
+                    title: l10n.settingsAccountSection,
                     icon: Icons.info_outline,
                     children: [
-                      _InfoRow(label: 'E-posta', value: email),
+                      _InfoRow(label: l10n.settingsEmailLabel, value: email),
                       const Divider(height: 24),
-                      _InfoRow(label: 'Uygulama Sürümü', value: _appVersion),
+                      _InfoRow(label: l10n.settingsAppVersion, value: _appVersion),
                     ],
                   ),
                 ],

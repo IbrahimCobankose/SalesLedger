@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:sales_ledger/core/storage/image_compressor.dart';
 import 'package:sales_ledger/core/storage/storage_buckets.dart';
 import 'package:sales_ledger/features/inventory/data/datasources/product_datasource.dart';
 import 'package:sales_ledger/features/inventory/data/models/product_model.dart';
@@ -102,8 +103,14 @@ class ProductSupabaseDatasource implements ProductDatasource {
     // path saklanır ve görüntülemede imzalı URL'ye çevrilir.
     final paths = <String>[];
     for (final photo in photos) {
-      final path = '$userId/${DateTime.now().microsecondsSinceEpoch}_${paths.length}.jpg';
-      await _client.storage.from(_photoBucket).uploadBinary(path, photo);
+      final compressed = await ImageCompressor.toWebp(photo);
+      final path =
+          '$userId/${DateTime.now().microsecondsSinceEpoch}_${paths.length}.${ImageCompressor.fileExtension}';
+      await _client.storage.from(_photoBucket).uploadBinary(
+            path,
+            compressed,
+            fileOptions: FileOptions(contentType: ImageCompressor.contentType),
+          );
       paths.add(path);
     }
     return paths;

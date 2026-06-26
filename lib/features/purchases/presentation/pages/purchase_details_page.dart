@@ -58,7 +58,7 @@ class PurchaseDetailsPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Düzenle',
+            tooltip: l10n.commonEdit,
             onPressed: () => context.push(AppRoutes.purchaseEdit(purchaseId)),
           ),
           IconButton(
@@ -266,7 +266,7 @@ class _PurchasePhotos extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Fotoğraflar', style: Theme.of(context).textTheme.titleLarge),
+          Text(context.l10n.commonPhotos, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,

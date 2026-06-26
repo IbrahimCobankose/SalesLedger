@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/storage/storage_buckets.dart';
 import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
@@ -123,7 +124,9 @@ class ProductCard extends StatelessWidget {
           if (onToggleFavorite != null)
             IconButton(
               visualDensity: VisualDensity.compact,
-              tooltip: product.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle',
+              tooltip: product.isFavorite
+                  ? context.l10n.inventoryFavoriteRemove
+                  : context.l10n.inventoryFavoriteAdd,
               icon: Icon(
                 product.isFavorite ? Icons.favorite : Icons.favorite_border,
                 color: product.isFavorite ? colorScheme.error : colorScheme.outline,

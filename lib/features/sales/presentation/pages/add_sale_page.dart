@@ -142,7 +142,7 @@ class _AddSalePageState extends ConsumerState<AddSalePage> {
     } catch (_) {
       if (mounted) {
         setState(() => _isLoadingExisting = false);
-        CustomSnackbar.show(context, message: 'Satış yüklenemedi.', isError: true);
+        CustomSnackbar.show(context, message: context.l10n.saleDetailsLoadFailed, isError: true);
       }
     }
   }

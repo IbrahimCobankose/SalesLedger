@@ -56,7 +56,7 @@ class SaleDetailsPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Düzenle',
+            tooltip: l10n.commonEdit,
             onPressed: () => context.push(AppRoutes.saleEdit(saleId)),
           ),
           IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _delete(context, ref)),

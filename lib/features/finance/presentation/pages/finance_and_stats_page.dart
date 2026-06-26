@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/reports/report_data.dart';
+import 'package:sales_ledger/core/reports/report_exporters.dart';
+import 'package:sales_ledger/core/reports/report_format_picker.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
-import 'package:sales_ledger/core/utils/excel_exporter.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/core/widgets/main_top_bar.dart';
 import 'package:sales_ledger/features/finance/presentation/providers/finance_provider.dart';
@@ -28,12 +30,22 @@ class FinanceAndStatsPage extends ConsumerWidget {
       return;
     }
 
+    final format = await showReportFormatPicker(context);
+    if (format == null || !context.mounted) return;
+
     try {
-      final path = await ExcelExporter.exportFinanceSummary(
-        periodLabel: periodLabel(l10n, period),
-        summary: summary,
-        chartData: chart,
+      final data = ReportData(
+        fileBaseName: 'kasa_raporu',
+        title: 'Kasa Raporu — ${periodLabel(l10n, period)}',
+        headers: const ['Dönem', 'Gelir (₺)', 'Gider (₺)'],
+        rows: [
+          for (final point in chart)
+            [point.label, point.income.toStringAsFixed(2), point.expense.toStringAsFixed(2)],
+          ['TOPLAM', summary.totalIncome.toStringAsFixed(2), summary.totalExpense.toStringAsFixed(2)],
+          ['NET KÂR', summary.netProfit.toStringAsFixed(2), ''],
+        ],
       );
+      final path = await ReportExporter.export(data, format);
       if (context.mounted) {
         CustomSnackbar.show(context, message: l10n.financeReportExportSuccess(path), isError: false);
       }

@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/gen/app_localizations.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
+import 'package:sales_ledger/core/reports/report_data.dart';
+import 'package:sales_ledger/core/reports/report_exporters.dart';
+import 'package:sales_ledger/core/reports/report_format_picker.dart';
 import 'package:sales_ledger/core/utils/debouncer.dart';
-import 'package:sales_ledger/core/utils/excel_exporter.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/core/widgets/main_top_bar.dart';
 import 'package:sales_ledger/core/widgets/profile_filter_dropdown.dart';
@@ -96,22 +98,38 @@ class _SalesPageState extends ConsumerState<SalesPage> {
             }),
           ),
           IconButton(
-            icon: const Icon(Icons.table_view_outlined),
-            tooltip: l10n.commonExportExcel,
+            icon: const Icon(Icons.ios_share),
+            tooltip: l10n.commonExport,
             onPressed: () async {
               final sales = salesAsync.valueOrNull ?? const [];
               if (sales.isEmpty) {
                 CustomSnackbar.show(context, message: l10n.salesNoExportData, isError: true);
                 return;
               }
+              final format = await showReportFormatPicker(context);
+              if (format == null || !context.mounted) return;
               try {
-                final path = await ExcelExporter.exportSales(sales);
+                final data = ReportData(
+                  fileBaseName: 'satislar',
+                  title: 'Satışlar Raporu',
+                  headers: const [
+                    'Müşteri', 'Platform', 'Tarih', 'Durum', 'Kalem', 'Toplam Tutar',
+                  ],
+                  rows: [
+                    for (final s in sales)
+                      [
+                        s.displayCustomerName,
+                        s.platform ?? '',
+                        s.saleDate.toIso8601String().split('T').first,
+                        s.status.label,
+                        s.itemCount.toString(),
+                        s.totalAmount.toStringAsFixed(2),
+                      ],
+                  ],
+                );
+                final path = await ReportExporter.export(data, format);
                 if (context.mounted) {
-                  CustomSnackbar.show(
-                    context,
-                    message: l10n.salesExportSuccess(path),
-                    isError: false,
-                  );
+                  CustomSnackbar.show(context, message: l10n.salesExportSuccess(path), isError: false);
                 }
               } catch (_) {
                 if (context.mounted) {

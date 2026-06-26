@@ -80,12 +80,14 @@ class ProductDetailsPage extends ConsumerWidget {
                 product.isFavorite ? Icons.favorite : Icons.favorite_border,
                 color: product.isFavorite ? colorScheme.error : null,
               ),
-              tooltip: product.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle',
+              tooltip: product.isFavorite
+                  ? l10n.inventoryFavoriteRemove
+                  : l10n.inventoryFavoriteAdd,
               onPressed: () => _toggleFavorite(context, ref, product),
             ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Düzenle',
+            tooltip: l10n.commonEdit,
             onPressed: () => context.push(AppRoutes.productEdit(productId)),
           ),
           IconButton(

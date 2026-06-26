@@ -207,7 +207,7 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
       if (mounted) setState(() {});
     } on PlatformException {
       if (mounted) {
-        CustomSnackbar.show(context, message: 'Fotoğraf seçilemedi. Lütfen tekrar deneyin.', isError: true);
+        CustomSnackbar.show(context, message: context.l10n.commonPhotoPickFailed, isError: true);
       }
     } finally {
       _isPickingPhotos = false;
@@ -394,7 +394,7 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
                     ),
                     const SizedBox(height: 16),
                     _buildSection(
-                      title: 'Fotoğraflar (opsiyonel)',
+                      title: l10n.addPurchasePhotosOptional,
                       children: [_buildPhotoGrid(colorScheme)],
                     ),
                     const SizedBox(height: 16),

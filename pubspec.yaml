@@ -38,3 +38,5 @@ flutter:
   generate: true
   assets:
     - .env
+    - assets/fonts/Roboto-Regular.ttf
+    - assets/fonts/Roboto-Bold.ttf

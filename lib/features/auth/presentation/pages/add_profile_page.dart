@@ -62,7 +62,7 @@ class _AddProfilePageState extends ConsumerState<AddProfilePage> {
       if (mounted) {
         CustomSnackbar.show(
           context,
-          message: 'Fotoğraf seçilemedi. Lütfen tekrar deneyin.',
+          message: context.l10n.commonPhotoPickFailed,
           isError: true,
         );
       }

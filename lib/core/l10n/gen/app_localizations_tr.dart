@@ -47,6 +47,21 @@ class AppLocalizationsTr extends AppLocalizations {
   String get commonExportFailed => 'Dışa aktarma başarısız oldu.';
 
   @override
+  String get commonExport => 'Dışa Aktar';
+
+  @override
+  String get reportFormatTitle => 'Rapor Biçimi Seç';
+
+  @override
+  String get reportFormatExcel => 'Excel (.xlsx)';
+
+  @override
+  String get reportFormatWord => 'Word (.docx)';
+
+  @override
+  String get reportFormatPdf => 'PDF (.pdf)';
+
+  @override
   String commonUnitsCount(Object count) {
     return '$count Adet';
   }
@@ -86,6 +101,75 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get commonAddAnotherProduct => 'Başka Ürün Ekle';
+
+  @override
+  String get commonEdit => 'Düzenle';
+
+  @override
+  String get commonPhotos => 'Fotoğraflar';
+
+  @override
+  String get commonPhotoPickFailed =>
+      'Fotoğraf seçilemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get settingsTitle => 'Ayarlar';
+
+  @override
+  String get settingsProfileSection => 'Profil';
+
+  @override
+  String get settingsLanguageSection => 'Dil';
+
+  @override
+  String get settingsAccountSection => 'Hesap & Uygulama';
+
+  @override
+  String get settingsBackupSection => 'Yedekleme';
+
+  @override
+  String get settingsBackupDescription =>
+      'Tüm verilerinizi (ürün, satış, alım, müşteri, tedarikçi) tek bir dosyaya kaydedip cihazınızda saklayabilirsiniz. Fotoğraflar buluttaki yerinde kalır.';
+
+  @override
+  String get settingsBackupExport => 'Verileri Dışa Aktar';
+
+  @override
+  String settingsBackupSuccess(Object path) {
+    return 'Yedek kaydedildi: $path';
+  }
+
+  @override
+  String get settingsBackupFailed =>
+      'Yedek oluşturulamadı. Lütfen tekrar deneyin.';
+
+  @override
+  String get settingsProfileNameLabel => 'Profil Adı';
+
+  @override
+  String get settingsProfileNameEmpty => 'Profil adı boş olamaz.';
+
+  @override
+  String get settingsProfileUpdated => 'Profil güncellendi.';
+
+  @override
+  String get settingsProfileUpdateFailed =>
+      'Profil güncellenemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get settingsEmailLabel => 'E-posta';
+
+  @override
+  String get settingsAppVersion => 'Uygulama Sürümü';
+
+  @override
+  String get inventoryFavoriteAdd => 'Favorilere ekle';
+
+  @override
+  String get inventoryFavoriteRemove => 'Favorilerden çıkar';
+
+  @override
+  String get addPurchasePhotosOptional => 'Fotoğraflar (opsiyonel)';
 
   @override
   String get navInventory => 'Envanter';
@@ -203,6 +287,22 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get profileSelectionAddNew => 'Yeni Profil Ekle';
+
+  @override
+  String get profileDeleteFailed => 'Profil silinemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get forgotPasswordSubmit => 'Sıfırlama Bağlantısı Gönder';
+
+  @override
+  String get backToLogin => 'Giriş Sayfasına Dön';
+
+  @override
+  String get emailVerificationResent =>
+      'Doğrulama e-postası yeniden gönderildi.';
+
+  @override
+  String get emailVerificationResend => 'Tekrar Gönder';
 
   @override
   String get profileSelectionAddNewSubtitle => 'Farklı bir hesapla giriş yapın';
