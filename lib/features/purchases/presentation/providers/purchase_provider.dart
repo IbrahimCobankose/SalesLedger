@@ -10,12 +10,14 @@ import 'package:sales_ledger/features/purchases/domain/entities/purchase.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item_draft.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_query.dart';
+import 'package:sales_ledger/features/purchases/domain/entities/purchase_status.dart';
 import 'package:sales_ledger/features/purchases/domain/repositories/purchase_repository.dart';
 import 'package:sales_ledger/features/purchases/domain/usecases/add_purchase_usecase.dart';
 import 'package:sales_ledger/features/purchases/domain/usecases/delete_purchase_usecase.dart';
 import 'package:sales_ledger/features/purchases/domain/usecases/get_purchase_by_id_usecase.dart';
 import 'package:sales_ledger/features/purchases/domain/usecases/get_purchase_items_usecase.dart';
 import 'package:sales_ledger/features/purchases/domain/usecases/get_purchases_usecase.dart';
+import 'package:sales_ledger/features/purchases/domain/usecases/update_purchase_usecase.dart';
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>((ref) {
   return PurchaseRepositoryImpl(
@@ -35,6 +37,9 @@ final getPurchaseItemsUseCaseProvider = Provider(
 );
 final addPurchaseUseCaseProvider = Provider(
   (ref) => AddPurchaseUseCase(ref.watch(purchaseRepositoryProvider)),
+);
+final updatePurchaseUseCaseProvider = Provider(
+  (ref) => UpdatePurchaseUseCase(ref.watch(purchaseRepositoryProvider)),
 );
 final deletePurchaseUseCaseProvider = Provider(
   (ref) => DeletePurchaseUseCase(ref.watch(purchaseRepositoryProvider)),
@@ -124,6 +129,7 @@ class AddPurchaseController extends AsyncNotifier<void> {
     String? paymentType,
     String? notes,
     List<Uint8List> photos = const [],
+    PurchaseStatus status = PurchaseStatus.completed,
   }) async {
     state = const AsyncLoading();
     try {
@@ -134,10 +140,46 @@ class AddPurchaseController extends AsyncNotifier<void> {
         paymentType: paymentType,
         notes: notes,
         photos: photos,
+        status: status,
         profileId: ref.read(selectedProfileProvider)?.id,
       );
       state = const AsyncData(null);
       ref.invalidate(purchasesProvider);
+      return true;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      return false;
+    }
+  }
+
+  Future<bool> updatePurchase({
+    required String purchaseId,
+    String? supplierName,
+    required DateTime purchaseDate,
+    required List<PurchaseItemDraft> items,
+    String? paymentType,
+    String? notes,
+    PurchaseStatus status = PurchaseStatus.completed,
+    List<String> keptPhotos = const [],
+    List<Uint8List> newPhotos = const [],
+  }) async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(updatePurchaseUseCaseProvider)(
+        purchaseId: purchaseId,
+        supplierName: supplierName,
+        purchaseDate: purchaseDate,
+        items: items,
+        paymentType: paymentType,
+        notes: notes,
+        status: status,
+        keptPhotos: keptPhotos,
+        newPhotos: newPhotos,
+      );
+      state = const AsyncData(null);
+      ref.invalidate(purchasesProvider);
+      ref.invalidate(purchaseDetailsProvider(purchaseId));
+      ref.invalidate(purchaseItemsProvider(purchaseId));
       return true;
     } catch (e, st) {
       state = AsyncError(e, st);

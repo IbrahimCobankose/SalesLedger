@@ -202,16 +202,13 @@ class _SalesPageState extends ConsumerState<SalesPage> {
                   if (sales.isEmpty) {
                     return Center(child: Text(l10n.salesEmpty));
                   }
-                  return GridView.builder(
+                  // İçerik yüksekliğine uyan liste: sabit yükseklikli grid,
+                  // kısa (detaysız) satışlarda altta boşluk bırakıyordu.
+                  return ListView.separated(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 420,
-                      mainAxisExtent: 176,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
                     itemCount: sales.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final sale = sales[index];
                       return SaleCard(

@@ -481,6 +481,18 @@ class AppLocalizationsTr extends AppLocalizations {
   String get addPurchaseSubmit => 'Alışı Kaydet';
 
   @override
+  String get addPurchaseEditTitle => 'Alışı Düzenle';
+
+  @override
+  String get addPurchaseUpdate => 'Alışı Güncelle';
+
+  @override
+  String get addPurchaseStatusLabel => 'Durum';
+
+  @override
+  String get addPurchaseLoadFailed => 'Alış yüklenemedi.';
+
+  @override
   String get addPurchaseProductHint => 'Ürün Ara veya Yeni Ürün Adı Girin';
 
   @override
@@ -691,6 +703,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get financeChartTitle => 'Gelir / Gider Analizi';
+
+  @override
+  String get financeChartBar => 'Sütun grafiği';
+
+  @override
+  String get financeChartLine => 'Çizgi grafiği';
 
   @override
   String get financeChartFailed => 'Grafik verisi yüklenemedi.';

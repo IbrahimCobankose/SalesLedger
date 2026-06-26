@@ -8,6 +8,7 @@ import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/core/widgets/main_top_bar.dart';
 import 'package:sales_ledger/features/finance/presentation/providers/finance_provider.dart';
 import 'package:sales_ledger/features/finance/presentation/widgets/period_selector.dart';
+import 'package:sales_ledger/features/finance/presentation/widgets/line_stat_chart.dart';
 import 'package:sales_ledger/features/finance/presentation/widgets/product_performance_list.dart';
 import 'package:sales_ledger/features/finance/presentation/widgets/stat_chart.dart';
 import 'package:sales_ledger/features/finance/presentation/widgets/summary_card.dart';
@@ -168,7 +169,21 @@ class FinanceAndStatsPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.financeChartTitle, style: Theme.of(context).textTheme.titleLarge),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.financeChartTitle,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
+                        _ChartTypeToggle(
+                          selected: ref.watch(financeChartTypeProvider),
+                          onChanged: (type) =>
+                              ref.read(financeChartTypeProvider.notifier).state = type,
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     chartAsync.when(
                       loading: () => const SizedBox(
@@ -176,7 +191,10 @@ class FinanceAndStatsPage extends ConsumerWidget {
                         child: Center(child: CircularProgressIndicator()),
                       ),
                       error: (error, _) => Text(l10n.financeChartFailed),
-                      data: (points) => StatChart(points: points),
+                      data: (points) =>
+                          ref.watch(financeChartTypeProvider) == FinanceChartType.line
+                              ? LineStatChart(points: points)
+                              : StatChart(points: points),
                     ),
                   ],
                 ),
@@ -205,6 +223,37 @@ class FinanceAndStatsPage extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Grafik türü (çubuk / çizgi) seçici küçük segmentli buton.
+class _ChartTypeToggle extends StatelessWidget {
+  const _ChartTypeToggle({required this.selected, required this.onChanged});
+
+  final FinanceChartType selected;
+  final ValueChanged<FinanceChartType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SegmentedButton<FinanceChartType>(
+      showSelectedIcon: false,
+      style: const ButtonStyle(visualDensity: VisualDensity.compact),
+      segments: [
+        ButtonSegment(
+          value: FinanceChartType.bar,
+          icon: const Icon(Icons.bar_chart, size: 18),
+          tooltip: l10n.financeChartBar,
+        ),
+        ButtonSegment(
+          value: FinanceChartType.line,
+          icon: const Icon(Icons.show_chart, size: 18),
+          tooltip: l10n.financeChartLine,
+        ),
+      ],
+      selected: {selected},
+      onSelectionChanged: (selection) => onChanged(selection.first),
     );
   }
 }

@@ -482,6 +482,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addPurchaseSubmit => 'Save Purchase';
 
   @override
+  String get addPurchaseEditTitle => 'Edit Purchase';
+
+  @override
+  String get addPurchaseUpdate => 'Update Purchase';
+
+  @override
+  String get addPurchaseStatusLabel => 'Status';
+
+  @override
+  String get addPurchaseLoadFailed => 'Could not load purchase.';
+
+  @override
   String get addPurchaseProductHint => 'Search a product or enter a new name';
 
   @override
@@ -692,6 +704,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get financeChartTitle => 'Income / Expense Analysis';
+
+  @override
+  String get financeChartBar => 'Bar chart';
+
+  @override
+  String get financeChartLine => 'Line chart';
 
   @override
   String get financeChartFailed => 'Chart data could not be loaded.';

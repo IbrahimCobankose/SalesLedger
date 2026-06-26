@@ -28,5 +28,12 @@ abstract class PurchaseDatasource {
     required List<PurchaseItemDraft> items,
   });
 
+  /// Mevcut alışı ve kalemlerini günceller (kalemler tamamen yenilenir).
+  Future<PurchaseModel> updatePurchase({
+    required String purchaseId,
+    required PurchaseModel purchase,
+    required List<PurchaseItemDraft> items,
+  });
+
   Future<void> deletePurchase(String id);
 }

@@ -8,6 +8,7 @@ import 'package:sales_ledger/features/purchases/domain/entities/purchase.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item_draft.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_query.dart';
+import 'package:sales_ledger/features/purchases/domain/entities/purchase_status.dart';
 import 'package:sales_ledger/features/purchases/domain/repositories/purchase_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -52,6 +53,7 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
     String? paymentType,
     String? notes,
     List<Uint8List> photos = const [],
+    PurchaseStatus status = PurchaseStatus.completed,
     String? profileId,
   }) async {
     try {
@@ -68,6 +70,7 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
         supplierName: supplierName,
         purchaseDate: purchaseDate,
         notes: notes,
+        status: status,
         paymentType: paymentType,
         totalAmount: totalAmount,
         photos: photoUrls,
@@ -87,6 +90,61 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
       throw const AppException('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
     } on PostgrestException {
       throw const AppException('Alış kaydedilemedi. Lütfen tekrar deneyin.');
+    }
+  }
+
+  @override
+  Future<Purchase> updatePurchase({
+    required String purchaseId,
+    String? supplierName,
+    required DateTime purchaseDate,
+    required List<PurchaseItemDraft> items,
+    String? paymentType,
+    String? notes,
+    PurchaseStatus status = PurchaseStatus.completed,
+    List<String> keptPhotos = const [],
+    List<Uint8List> newPhotos = const [],
+  }) async {
+    try {
+      final userId = _authDatasource.currentUserId;
+      final totalAmount = items.fold<double>(0, (sum, item) => sum + item.lineTotal);
+
+      // Düzenleme öncesi fotoğrafları, kaldırılanları depolamadan silebilmek için al.
+      final original = await _datasource.getPurchaseById(purchaseId);
+
+      final uploaded = newPhotos.isEmpty
+          ? const <String>[]
+          : await _datasource.uploadPhotos(userId: userId, photos: newPhotos);
+      final mergedPhotos = [...keptPhotos, ...uploaded];
+
+      final model = PurchaseModel(
+        id: purchaseId,
+        userId: userId,
+        supplierName: supplierName,
+        purchaseDate: purchaseDate,
+        notes: notes,
+        status: status,
+        paymentType: paymentType,
+        totalAmount: totalAmount,
+        photos: mergedPhotos,
+        createdAt: DateTime.now(),
+      );
+
+      final updated =
+          await _datasource.updatePurchase(purchaseId: purchaseId, purchase: model, items: items);
+
+      final removed = original.photos.where((p) => !mergedPhotos.contains(p)).toList();
+      if (removed.isNotEmpty) {
+        try {
+          await _datasource.deletePhotos(removed);
+        } catch (_) {}
+      }
+
+      return updated;
+    } on StorageException {
+      throw const AppException('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
+    } on PostgrestException {
+      throw const AppException('Alış güncellenemedi. Lütfen tekrar deneyin.');
     }
   }
 

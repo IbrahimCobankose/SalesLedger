@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sales_ledger/core/constants/app_limits.dart';
 import 'package:sales_ledger/core/l10n/gen/app_localizations.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/custom_button.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
@@ -13,6 +15,7 @@ import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
 import 'package:sales_ledger/features/inventory/domain/entities/product_query.dart';
 import 'package:sales_ledger/features/inventory/presentation/providers/product_provider.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_item_draft.dart';
+import 'package:sales_ledger/features/purchases/domain/entities/purchase_status.dart';
 import 'package:sales_ledger/features/purchases/presentation/providers/purchase_provider.dart';
 
 /// Ödeme tipi veritabanında her zaman Türkçe saklanır (kategori adları
@@ -59,9 +62,12 @@ class _ItemRow {
   }
 }
 
-/// alış_ekle.html taslağına karşılık gelen alış ekleme formu.
+/// alış_ekle.html taslağına karşılık gelen alış ekleme/düzenleme formu.
+/// [purchaseId] verilirse mevcut alış yüklenip düzenleme modunda açılır.
 class AddPurchasePage extends ConsumerStatefulWidget {
-  const AddPurchasePage({super.key});
+  const AddPurchasePage({super.key, this.purchaseId});
+
+  final String? purchaseId;
 
   @override
   ConsumerState<AddPurchasePage> createState() => _AddPurchasePageState();
@@ -73,9 +79,81 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
   final _notesController = TextEditingController();
   DateTime _purchaseDate = DateTime.now();
   String _paymentType = _paymentTypes.first;
+  PurchaseStatus _status = PurchaseStatus.completed;
   final List<_ItemRow> _items = [_ItemRow()];
   final List<Uint8List> _photos = [];
+  final List<String> _existingPhotoUrls = [];
   bool _isPickingPhotos = false;
+  bool _loadingExisting = false;
+
+  bool get _isEditing => widget.purchaseId != null;
+
+  int get _totalPhotoCount => _existingPhotoUrls.length + _photos.length;
+
+  /// Alımlarda yalnızca 3 durum anlamlı: Tamamlandı / Bekliyor / İptal.
+  /// Ham bekleyen alt durumları (packaging/delayed/shipped) tek "Bekliyor"a indir.
+  static PurchaseStatus _normalizeStatus(PurchaseStatus status) {
+    switch (status) {
+      case PurchaseStatus.completed:
+        return PurchaseStatus.completed;
+      case PurchaseStatus.canceled:
+        return PurchaseStatus.canceled;
+      case PurchaseStatus.packaging:
+      case PurchaseStatus.delayed:
+      case PurchaseStatus.shipped:
+        return PurchaseStatus.packaging;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.purchaseId != null) {
+      _loadingExisting = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadExisting());
+    }
+  }
+
+  Future<void> _loadExisting() async {
+    try {
+      final purchase = await ref.read(getPurchaseByIdUseCaseProvider)(widget.purchaseId!);
+      final items = await ref.read(getPurchaseItemsUseCaseProvider)(widget.purchaseId!);
+      if (!mounted) return;
+      setState(() {
+        _supplierNameController.text = purchase.supplierName ?? '';
+        _notesController.text = purchase.notes ?? '';
+        _purchaseDate = purchase.purchaseDate;
+        _paymentType =
+            _paymentTypes.contains(purchase.paymentType) ? purchase.paymentType! : _paymentTypes.first;
+        _status = _normalizeStatus(purchase.status);
+        _existingPhotoUrls
+          ..clear()
+          ..addAll(purchase.photos);
+        for (final item in _items) {
+          item.dispose();
+        }
+        _items.clear();
+        if (items.isEmpty) {
+          _items.add(_ItemRow());
+        } else {
+          for (final it in items) {
+            final row = _ItemRow();
+            row.nameController.text = it.name;
+            row.priceController.text = it.customPurchasePrice.toStringAsFixed(2);
+            row.quantityController.text = it.quantity.toString();
+            row.productId = it.productId;
+            _items.add(row);
+          }
+        }
+        _loadingExisting = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _loadingExisting = false);
+        CustomSnackbar.show(context, message: context.l10n.addPurchaseLoadFailed, isError: true);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -100,7 +178,7 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
   }
 
   Future<void> _pickPhotos() async {
-    final remaining = AppLimits.maxProductPhotos - _photos.length;
+    final remaining = AppLimits.maxProductPhotos - _totalPhotoCount;
     if (remaining <= 0) return;
     if (_isPickingPhotos) return;
     _isPickingPhotos = true;
@@ -159,15 +237,32 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
         )
         .toList();
 
-    final success = await ref.read(addPurchaseControllerProvider.notifier).addPurchase(
-          supplierName:
-              _supplierNameController.text.trim().isEmpty ? null : _supplierNameController.text.trim(),
-          purchaseDate: _purchaseDate,
-          items: drafts,
-          paymentType: _paymentType,
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-          photos: _photos,
-        );
+    final supplierName =
+        _supplierNameController.text.trim().isEmpty ? null : _supplierNameController.text.trim();
+    final notes = _notesController.text.trim().isEmpty ? null : _notesController.text.trim();
+    final controller = ref.read(addPurchaseControllerProvider.notifier);
+
+    final success = _isEditing
+        ? await controller.updatePurchase(
+            purchaseId: widget.purchaseId!,
+            supplierName: supplierName,
+            purchaseDate: _purchaseDate,
+            items: drafts,
+            paymentType: _paymentType,
+            notes: notes,
+            status: _status,
+            keptPhotos: _existingPhotoUrls,
+            newPhotos: _photos,
+          )
+        : await controller.addPurchase(
+            supplierName: supplierName,
+            purchaseDate: _purchaseDate,
+            items: drafts,
+            paymentType: _paymentType,
+            notes: notes,
+            status: _status,
+            photos: _photos,
+          );
 
     if (!mounted) return;
 
@@ -189,9 +284,20 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
     final isLoading = ref.watch(addPurchaseControllerProvider).isLoading;
     final l10n = context.l10n;
 
+    if (_loadingExisting) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        appBar: AppBar(title: Text(l10n.addPurchaseEditTitle), centerTitle: true),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(title: Text(l10n.addPurchaseTitle), centerTitle: true),
+      appBar: AppBar(
+        title: Text(_isEditing ? l10n.addPurchaseEditTitle : l10n.addPurchaseTitle),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -220,6 +326,35 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
                             decoration: InputDecoration(labelText: l10n.addPurchaseDate),
                             child: Text(formatTurkishDateLong(_purchaseDate)),
                           ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSection(
+                      title: l10n.addPurchaseStatusLabel,
+                      children: [
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            ChoiceChip(
+                              label: Text(l10n.purchaseStatusCompleted),
+                              selected: _status == PurchaseStatus.completed,
+                              onSelected: (_) =>
+                                  setState(() => _status = PurchaseStatus.completed),
+                            ),
+                            ChoiceChip(
+                              label: Text(l10n.purchaseStatusPending),
+                              selected: _status == PurchaseStatus.packaging,
+                              onSelected: (_) =>
+                                  setState(() => _status = PurchaseStatus.packaging),
+                            ),
+                            ChoiceChip(
+                              label: Text(l10n.purchaseStatusCanceled),
+                              selected: _status == PurchaseStatus.canceled,
+                              onSelected: (_) =>
+                                  setState(() => _status = PurchaseStatus.canceled),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -300,7 +435,7 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: PrimaryButton(
-                            label: l10n.addPurchaseSubmit,
+                            label: _isEditing ? l10n.addPurchaseUpdate : l10n.addPurchaseSubmit,
                             icon: Icons.check,
                             isLoading: isLoading,
                             onPressed: _submit,
@@ -453,33 +588,50 @@ class _AddPurchasePageState extends ConsumerState<AddPurchasePage> {
     );
   }
 
+  Widget _removableThumb(ColorScheme colorScheme, Widget image, VoidCallback onRemove) {
+    return Stack(
+      children: [
+        ClipRRect(borderRadius: BorderRadius.circular(8), child: image),
+        Positioned(
+          top: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: onRemove,
+            child: CircleAvatar(
+              radius: 10,
+              backgroundColor: colorScheme.error,
+              child: Icon(Icons.close, size: 14, color: colorScheme.onError),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPhotoGrid(ColorScheme colorScheme) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        for (var i = 0; i < _photos.length; i++)
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.memory(_photos[i], width: 80, height: 80, fit: BoxFit.cover),
-              ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: () => setState(() => _photos.removeAt(i)),
-                  child: CircleAvatar(
-                    radius: 10,
-                    backgroundColor: colorScheme.error,
-                    child: Icon(Icons.close, size: 14, color: colorScheme.onError),
-                  ),
-                ),
-              ),
-            ],
+        for (var i = 0; i < _existingPhotoUrls.length; i++)
+          _removableThumb(
+            colorScheme,
+            StorageImage(
+              bucket: StorageBuckets.purchasePhotos,
+              path: _existingPhotoUrls[i],
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            ),
+            () => setState(() => _existingPhotoUrls.removeAt(i)),
           ),
-        if (_photos.length < AppLimits.maxProductPhotos)
+        for (var i = 0; i < _photos.length; i++)
+          _removableThumb(
+            colorScheme,
+            Image.memory(_photos[i], width: 80, height: 80, fit: BoxFit.cover),
+            () => setState(() => _photos.removeAt(i)),
+          ),
+        if (_totalPhotoCount < AppLimits.maxProductPhotos)
           GestureDetector(
             onTap: _pickPhotos,
             child: Container(

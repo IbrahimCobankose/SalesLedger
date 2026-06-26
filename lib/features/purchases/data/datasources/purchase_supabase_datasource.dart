@@ -118,6 +118,38 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
   }
 
   @override
+  Future<PurchaseModel> updatePurchase({
+    required String purchaseId,
+    required PurchaseModel purchase,
+    required List<PurchaseItemDraft> items,
+  }) async {
+    await _client.from('purchases').update(purchase.toUpdateJson()).eq('id', purchaseId);
+
+    // Kalemleri tamamen yenile: eskileri sil, yenilerini ekle.
+    await _client.from('purchase_items').delete().eq('purchase_id', purchaseId);
+    if (items.isNotEmpty) {
+      await _client.from('purchase_items').insert(
+            items
+                .map((item) => {
+                      'purchase_id': purchaseId,
+                      'product_id': item.productId,
+                      'name': item.name,
+                      'custom_purchase_price': item.unitPrice,
+                      'quantity': item.quantity,
+                    })
+                .toList(),
+          );
+    }
+
+    final row = await _client
+        .from('purchases')
+        .select('*, purchase_items(count), profiles(name)')
+        .eq('id', purchaseId)
+        .single();
+    return PurchaseModel.fromJson(row);
+  }
+
+  @override
   Future<void> deletePhotos(List<String> photoPaths) async {
     final paths = photoPaths.map((v) => storagePathFromValue(v, _photoBucket)).toList();
     if (paths.isNotEmpty) {

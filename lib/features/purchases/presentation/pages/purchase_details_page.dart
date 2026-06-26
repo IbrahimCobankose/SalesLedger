@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/core/storage/storage_buckets.dart';
 import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
@@ -55,6 +56,11 @@ class PurchaseDetailsPage extends ConsumerWidget {
         title: Text(l10n.purchaseDetailsTitle),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Düzenle',
+            onPressed: () => context.push(AppRoutes.purchaseEdit(purchaseId)),
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _delete(context, ref),

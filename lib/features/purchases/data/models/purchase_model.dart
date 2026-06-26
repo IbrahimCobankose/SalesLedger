@@ -57,10 +57,9 @@ class PurchaseModel extends Purchase {
     );
   }
 
-  Map<String, dynamic> toInsertJson() {
+  Map<String, dynamic> _baseJson() {
     return {
       'user_id': userId,
-      'profile_id': profileId,
       'supplier_id': supplierId,
       'supplier_name': supplierName,
       'purchase_date': purchaseDate.toIso8601String(),
@@ -72,4 +71,10 @@ class PurchaseModel extends Purchase {
       'photos': photos,
     };
   }
+
+  /// Oluştururken `profile_id` de yazılır.
+  Map<String, dynamic> toInsertJson() => {..._baseJson(), 'profile_id': profileId};
+
+  /// Güncellerken `profile_id` yazılmaz; mevcut profil bağı korunur.
+  Map<String, dynamic> toUpdateJson() => _baseJson();
 }

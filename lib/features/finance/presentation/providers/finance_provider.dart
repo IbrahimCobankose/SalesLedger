@@ -14,6 +14,13 @@ import 'package:sales_ledger/features/finance/domain/usecases/get_finance_summar
 import 'package:sales_ledger/features/finance/domain/usecases/get_top_revenue_products_usecase.dart';
 import 'package:sales_ledger/features/finance/domain/usecases/get_top_selling_products_usecase.dart';
 
+/// Gelir/Gider grafiğinin gösterim türü (çubuk / çizgi).
+enum FinanceChartType { bar, line }
+
+/// Finans ekranındaki grafik türü tercihi (kullanıcı çubuk/çizgi seçebilir).
+final financeChartTypeProvider =
+    StateProvider<FinanceChartType>((ref) => FinanceChartType.bar);
+
 final financeRepositoryProvider = Provider<FinanceRepository>((ref) {
   return FinanceRepositoryImpl(
     FinanceSupabaseDatasource(supabase),

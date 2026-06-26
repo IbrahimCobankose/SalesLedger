@@ -998,6 +998,30 @@ abstract class AppLocalizations {
   /// **'Save Purchase'**
   String get addPurchaseSubmit;
 
+  /// No description provided for @addPurchaseEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Purchase'**
+  String get addPurchaseEditTitle;
+
+  /// No description provided for @addPurchaseUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Purchase'**
+  String get addPurchaseUpdate;
+
+  /// No description provided for @addPurchaseStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get addPurchaseStatusLabel;
+
+  /// No description provided for @addPurchaseLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load purchase.'**
+  String get addPurchaseLoadFailed;
+
   /// No description provided for @addPurchaseProductHint.
   ///
   /// In en, this message translates to:
@@ -1405,6 +1429,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Income / Expense Analysis'**
   String get financeChartTitle;
+
+  /// No description provided for @financeChartBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar chart'**
+  String get financeChartBar;
+
+  /// No description provided for @financeChartLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Line chart'**
+  String get financeChartLine;
 
   /// No description provided for @financeChartFailed.
   ///

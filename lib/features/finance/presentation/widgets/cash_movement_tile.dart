@@ -13,9 +13,10 @@ String _formatDateTime(DateTime date) {
 /// kasa_hareketleri.html taslağındaki gelir/gider satırı. Gelir → yeşil
 /// arrow_downward, gider → kırmızı arrow_upward (gereksinim 4.5.2).
 class CashMovementTile extends StatelessWidget {
-  const CashMovementTile({super.key, required this.movement});
+  const CashMovementTile({super.key, required this.movement, this.onTap});
 
   final CashMovement movement;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class CashMovementTile extends StatelessWidget {
     final amountColor = isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
     final sign = isIncome ? '+' : '-';
 
-    return Container(
+    final content = Container(
       padding: const EdgeInsets.all(16),
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
       child: Row(
@@ -59,8 +60,18 @@ class CashMovementTile extends StatelessWidget {
             '$sign ₺${movement.amount.toStringAsFixed(2)}',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(color: amountColor),
           ),
+          if (onTap != null) ...[
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.outline),
+          ],
         ],
       ),
+    );
+
+    if (onTap == null) return content;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(onTap: onTap, child: content),
     );
   }
 }

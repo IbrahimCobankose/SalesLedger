@@ -4,6 +4,9 @@ import 'package:sales_ledger/features/finance/domain/entities/chart_point.dart';
 
 /// kasa_ve_istatistikler.html taslağındaki Gelir/Gider çubuk grafiği.
 /// Gelir = primary (mavi), gider = error (kırmızı) — gereksinim 4.5.1.
+/// Her bir veri grubunun (gelir+gider çubukları + etiket) ayrılan genişliği.
+const double _groupWidth = 48;
+
 class StatChart extends StatelessWidget {
   const StatChart({super.key, required this.points});
 
@@ -23,37 +26,56 @@ class StatChart extends StatelessWidget {
         .fold<double>(0, (a, b) => a > b ? a : b);
     final safeMax = maxValue <= 0 ? 1.0 : maxValue;
 
+    // Çok sayıda nokta (ör. yıllık 12 ay) sabit genişlikte taşma (overflow)
+    // yaratıyordu. Sığmazsa yatay kaydırmaya geçilir; sığarsa eşit dağıtılır.
+    Widget buildGroup(ChartPoint point) {
+      return SizedBox(
+        width: _groupWidth,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _Bar(heightFraction: point.income / safeMax, color: colorScheme.primary),
+                const SizedBox(width: 4),
+                _Bar(heightFraction: point.expense / safeMax, color: colorScheme.error),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              point.label,
+              style: textTheme.labelSmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: [
         SizedBox(
           height: 192,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: points.map((point) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _Bar(
-                        heightFraction: point.income / safeMax,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      _Bar(
-                        heightFraction: point.expense / safeMax,
-                        color: colorScheme.error,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(point.label, style: textTheme.labelSmall),
-                ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final totalWidth = points.length * _groupWidth;
+              final fits = totalWidth <= constraints.maxWidth;
+              final row = Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment:
+                    fits ? MainAxisAlignment.spaceAround : MainAxisAlignment.start,
+                children: [for (final point in points) buildGroup(point)],
               );
-            }).toList(),
+              if (fits) return row;
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(width: totalWidth, child: row),
+              );
+            },
           ),
         ),
         const SizedBox(height: 16),

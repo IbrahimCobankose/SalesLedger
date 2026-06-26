@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/features/finance/domain/entities/cash_movement.dart';
 import 'package:sales_ledger/features/finance/presentation/providers/finance_provider.dart';
 import 'package:sales_ledger/features/finance/presentation/widgets/cash_movement_tile.dart';
@@ -233,7 +235,19 @@ class CashFlowPage extends ConsumerWidget {
                       children: [
                         for (var i = 0; i < movements.length; i++) ...[
                           if (i > 0) Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-                          CashMovementTile(movement: movements[i]),
+                          CashMovementTile(
+                            movement: movements[i],
+                            onTap: () {
+                              final movement = movements[i];
+                              // Gelir bir satışa, gider bir alışa karşılık gelir;
+                              // ilgili detay sayfasına götür.
+                              if (movement.type == CashMovementType.income) {
+                                context.push(AppRoutes.saleDetails(movement.id));
+                              } else {
+                                context.push(AppRoutes.purchaseDetails(movement.id));
+                              }
+                            },
+                          ),
                         ],
                       ],
                     ),

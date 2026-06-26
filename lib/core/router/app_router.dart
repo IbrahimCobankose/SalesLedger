@@ -43,6 +43,7 @@ abstract class AppRoutes {
   static String productDetails(String id) => '/products/$id';
   static String productEdit(String id) => '/products/edit/$id';
   static String purchaseDetails(String id) => '/purchase-details/$id';
+  static String purchaseEdit(String id) => '/purchases/edit/$id';
   static String saleDetails(String id) => '/sale-details/$id';
   static String saleEdit(String id) => '/sales/edit/$id';
 }
@@ -130,6 +131,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.addPurchase,
         builder: (context, state) => const AddPurchasePage(),
+      ),
+      GoRoute(
+        path: '/purchases/edit/:id',
+        builder: (context, state) => AddPurchasePage(purchaseId: state.pathParameters['id']),
       ),
       GoRoute(
         path: '/purchase-details/:id',
