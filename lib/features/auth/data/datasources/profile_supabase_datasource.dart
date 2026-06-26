@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
 import 'package:sales_ledger/features/auth/data/datasources/profile_datasource.dart';
 import 'package:sales_ledger/features/auth/data/models/profile_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,7 +9,7 @@ class ProfileSupabaseDatasource implements ProfileDatasource {
   ProfileSupabaseDatasource(this._client);
 
   final SupabaseClient _client;
-  static const _avatarBucket = 'avatars';
+  static const _avatarBucket = StorageBuckets.avatars;
 
   @override
   Future<List<ProfileModel>> getProfiles(String userId) async {
@@ -78,7 +79,9 @@ class ProfileSupabaseDatasource implements ProfileDatasource {
       ),
     );
 
-    return _client.storage.from(_avatarBucket).getPublicUrl(path);
+    // Bucket gizli; DB'de bucket içi göreli path saklanır, görüntülemede
+    // imzalı URL üretilir.
+    return path;
   }
 
   /// Dosya uzantısından MIME türü üretir.

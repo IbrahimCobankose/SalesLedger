@@ -101,6 +101,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navLogout => 'Log Out';
 
   @override
+  String get sessionExpiredMessage =>
+      'Your session has timed out for security reasons. Please sign in again.';
+
+  @override
   String get loginWelcome => 'Sign in to your account and start managing.';
 
   @override
@@ -240,6 +244,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryFilterOutOfStock => 'Out of Stock';
+
+  @override
+  String get inventoryFilterFavorites => 'Favorites';
 
   @override
   String get inventorySort => 'Sort';

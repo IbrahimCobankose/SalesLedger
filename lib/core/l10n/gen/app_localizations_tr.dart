@@ -101,6 +101,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get navLogout => 'Çıkış Yap';
 
   @override
+  String get sessionExpiredMessage =>
+      'Güvenlik nedeniyle oturumunuz zaman aşımına uğradı. Lütfen tekrar giriş yapın.';
+
+  @override
   String get loginWelcome => 'Hesabınıza giriş yapın ve yönetime başlayın.';
 
   @override
@@ -238,6 +242,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get inventoryFilterOutOfStock => 'Stokta Yok';
+
+  @override
+  String get inventoryFilterFavorites => 'Favoriler';
 
   @override
   String get inventorySort => 'Sırala';

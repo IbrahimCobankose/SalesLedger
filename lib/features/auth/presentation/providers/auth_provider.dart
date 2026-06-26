@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
+import 'package:sales_ledger/core/storage/signed_url_cache.dart';
 import 'package:sales_ledger/features/auth/data/datasources/auth_supabase_datasource.dart';
 import 'package:sales_ledger/features/auth/data/datasources/profile_supabase_datasource.dart';
 import 'package:sales_ledger/features/auth/data/repositories/auth_repository_impl.dart';
@@ -93,6 +94,8 @@ class AuthController extends AsyncNotifier<void> {
       // temizlenmeli; aksi halde sonraki girişte router yanlışlıkla eski
       // profille doğrudan ana ekrana yönlendirir.
       ref.read(selectedProfileProvider.notifier).clear();
+      // Önbellekteki imzalı görsel URL'lerini temizle (yeni oturuma sızmasın).
+      SignedUrlCache.clear();
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);

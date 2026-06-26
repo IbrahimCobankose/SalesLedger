@@ -1,4 +1,4 @@
-package com.example.sales_ledger
+package com.satisdefteri.app
 
 import io.flutter.embedding.android.FlutterActivity
 

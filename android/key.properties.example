@@ -1,0 +1,16 @@
+# Release imzalama şablonu.
+#
+# 1) Bu dosyayı "key.properties" adıyla kopyalayın (aynı klasöre: android/key.properties).
+# 2) Aşağıdaki değerleri keytool ile ürettiğiniz keystore bilgilerinizle doldurun.
+# 3) key.properties ve .jks dosyasını ASLA git'e eklemeyin (zaten .gitignore'da).
+# 4) upload-keystore.jks dosyasını güvenli bir yerde yedekleyin — kaybederseniz
+#    uygulamayı bir daha güncelleyemezsiniz.
+#
+# Keystore üretmek için (android/ klasöründe çalıştırın):
+#   keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+
+storePassword=KEYSTORE_SIFRENIZ
+keyPassword=ANAHTAR_SIFRENIZ
+keyAlias=upload
+# storeFile yolu android/ klasörüne göredir:
+storeFile=upload-keystore.jks

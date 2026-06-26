@@ -1,15 +1,22 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
 import 'package:sales_ledger/features/inventory/presentation/widgets/stock_badge.dart';
 
 /// envanter.html "bento grid" ürün kartı. Stokta yoksa kart soluklaşır ve
 /// görsel gri tonlamaya çevrilir.
 class ProductCard extends StatelessWidget {
-  const ProductCard({super.key, required this.product, required this.onTap});
+  const ProductCard({
+    super.key,
+    required this.product,
+    required this.onTap,
+    this.onToggleFavorite,
+  });
 
   final Product product;
   final VoidCallback onTap;
+  final VoidCallback? onToggleFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +43,12 @@ class ProductCard extends StatelessWidget {
                 width: 80,
                 height: 80,
                 child: product.photos.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: product.photos.first,
+                    ? StorageImage(
+                        bucket: StorageBuckets.productPhotos,
+                        path: product.photos.first,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(color: colorScheme.surfaceContainer),
-                        errorWidget: (context, url, error) => Container(
+                        placeholder: Container(color: colorScheme.surfaceContainer),
+                        errorWidget: Container(
                           color: colorScheme.surfaceContainer,
                           child: Icon(Icons.image_not_supported_outlined, color: colorScheme.outline),
                         ),
@@ -95,6 +103,16 @@ class ProductCard extends StatelessWidget {
               ],
             ),
           ),
+          if (onToggleFavorite != null)
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: product.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle',
+              icon: Icon(
+                product.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: product.isFavorite ? colorScheme.error : colorScheme.outline,
+              ),
+              onPressed: onToggleFavorite,
+            ),
         ],
       ),
     );

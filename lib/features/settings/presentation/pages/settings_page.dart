@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sales_ledger/core/backup/backup_service.dart';
 import 'package:sales_ledger/core/constants/app_limits.dart';
 import 'package:sales_ledger/core/l10n/locale_provider.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/custom_button.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
@@ -27,6 +29,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   String _avatarExtension = 'jpg';
   bool _isSaving = false;
   bool _isPickingPhoto = false;
+  bool _isBackingUp = false;
   bool _initialized = false;
 
   @override
@@ -102,6 +105,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
+  Future<void> _exportBackup() async {
+    if (_isBackingUp) return;
+    setState(() => _isBackingUp = true);
+    try {
+      final path = await BackupService.exportAll();
+      if (mounted) {
+        CustomSnackbar.show(context, message: 'Yedek kaydedildi: $path', isError: false);
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomSnackbar.show(
+          context,
+          message: e is AppException ? e.message : 'Yedek oluşturulamadı. Lütfen tekrar deneyin.',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isBackingUp = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -115,10 +139,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _nameController.text = profile.name;
       _initialized = true;
     }
-
-    final ImageProvider? avatarImage = _newAvatarBytes != null
-        ? MemoryImage(_newAvatarBytes!)
-        : (profile?.avatarUrl != null ? NetworkImage(profile!.avatarUrl!) : null);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -142,19 +162,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           onTap: _pickPhoto,
                           child: Stack(
                             children: [
-                              CircleAvatar(
+                              StorageAvatar(
                                 radius: 44,
-                                backgroundColor: colorScheme.surfaceContainer,
-                                backgroundImage: avatarImage,
-                                child: avatarImage == null
-                                    ? Text(
-                                        profile?.name.isNotEmpty == true
-                                            ? profile!.name[0].toUpperCase()
-                                            : '?',
-                                        style: textTheme.headlineSmall
-                                            ?.copyWith(color: colorScheme.primary),
-                                      )
+                                path: profile?.avatarUrl,
+                                overrideImage: _newAvatarBytes != null
+                                    ? MemoryImage(_newAvatarBytes!)
                                     : null,
+                                backgroundColor: colorScheme.surfaceContainer,
+                                fallback: Text(
+                                  profile?.name.isNotEmpty == true
+                                      ? profile!.name[0].toUpperCase()
+                                      : '?',
+                                  style: textTheme.headlineSmall
+                                      ?.copyWith(color: colorScheme.primary),
+                                ),
                               ),
                               Positioned(
                                 bottom: 0,
@@ -202,6 +223,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         onSelectionChanged: (selection) {
                           ref.read(localeProvider.notifier).setLocale(Locale(selection.first));
                         },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // --- Yedekleme (salt dışa aktarma) ---
+                  _Section(
+                    title: 'Yedekleme',
+                    icon: Icons.backup_outlined,
+                    children: [
+                      Text(
+                        'Tüm verilerinizi (ürün, satış, alım, müşteri, tedarikçi) '
+                        'tek bir dosyaya kaydedip cihazınızda saklayabilirsiniz. '
+                        'Fotoğraflar buluttaki yerinde kalır.',
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: 12),
+                      PrimaryButton(
+                        label: 'Verileri Dışa Aktar',
+                        isLoading: _isBackingUp,
+                        onPressed: _exportBackup,
                       ),
                     ],
                   ),

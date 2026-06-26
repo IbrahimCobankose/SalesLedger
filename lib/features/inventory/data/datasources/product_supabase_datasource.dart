@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
 import 'package:sales_ledger/features/inventory/data/datasources/product_datasource.dart';
 import 'package:sales_ledger/features/inventory/data/models/product_model.dart';
 import 'package:sales_ledger/features/inventory/data/models/product_sale_history_item_model.dart';
@@ -10,7 +11,7 @@ class ProductSupabaseDatasource implements ProductDatasource {
   ProductSupabaseDatasource(this._client);
 
   final SupabaseClient _client;
-  static const _photoBucket = 'product-photos';
+  static const _photoBucket = StorageBuckets.productPhotos;
 
   @override
   Future<List<ProductModel>> getProducts(String userId, ProductQuery query) async {
@@ -30,6 +31,9 @@ class ProductSupabaseDatasource implements ProductDatasource {
         builder = builder.eq('stock_quantity', 0);
       case StockFilter.all:
         break;
+    }
+    if (query.favoritesOnly) {
+      builder = builder.eq('is_favorite', true);
     }
 
     final from = query.page * query.pageSize;
@@ -80,38 +84,32 @@ class ProductSupabaseDatasource implements ProductDatasource {
   }
 
   @override
+  Future<void> setFavorite(String id, bool value) async {
+    await _client.from('products').update({'is_favorite': value}).eq('id', id);
+  }
+
+  @override
   Future<List<String>> uploadPhotos({
     required String userId,
     required List<Uint8List> photos,
   }) async {
-    final urls = <String>[];
+    // Bucket gizli olduğundan public URL üretilmez; DB'de bucket içi göreli
+    // path saklanır ve görüntülemede imzalı URL'ye çevrilir.
+    final paths = <String>[];
     for (final photo in photos) {
-      final path = '$userId/${DateTime.now().microsecondsSinceEpoch}_${urls.length}.jpg';
+      final path = '$userId/${DateTime.now().microsecondsSinceEpoch}_${paths.length}.jpg';
       await _client.storage.from(_photoBucket).uploadBinary(path, photo);
-      urls.add(_client.storage.from(_photoBucket).getPublicUrl(path));
+      paths.add(path);
     }
-    return urls;
+    return paths;
   }
 
   @override
-  Future<void> deletePhotos(List<String> photoUrls) async {
-    final paths = _storagePathsFromUrls(photoUrls, _photoBucket);
+  Future<void> deletePhotos(List<String> photoPaths) async {
+    final paths = photoPaths.map((v) => storagePathFromValue(v, _photoBucket)).toList();
     if (paths.isNotEmpty) {
       await _client.storage.from(_photoBucket).remove(paths);
     }
-  }
-
-  /// Public URL'den bucket içi göreli yolu çıkarır:
-  /// `.../object/public/<bucket>/<path>` → `<path>`.
-  static List<String> _storagePathsFromUrls(List<String> urls, String bucket) {
-    final marker = '/object/public/$bucket/';
-    final paths = <String>[];
-    for (final url in urls) {
-      final index = url.indexOf(marker);
-      if (index == -1) continue;
-      paths.add(Uri.decodeComponent(url.substring(index + marker.length)));
-    }
-    return paths;
   }
 
   @override

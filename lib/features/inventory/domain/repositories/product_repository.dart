@@ -35,5 +35,8 @@ abstract class ProductRepository {
 
   Future<void> deleteProduct(String id);
 
+  /// Ürünü favorilere ekler/çıkarır.
+  Future<void> setFavorite(String id, bool value);
+
   Future<List<ProductSaleHistoryItem>> getSaleHistory(String productId);
 }

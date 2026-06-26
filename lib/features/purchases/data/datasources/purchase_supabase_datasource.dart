@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
 import 'package:sales_ledger/features/purchases/data/datasources/purchase_datasource.dart';
 import 'package:sales_ledger/features/purchases/data/models/purchase_item_model.dart';
 import 'package:sales_ledger/features/purchases/data/models/purchase_model.dart';
@@ -11,20 +12,21 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
   PurchaseSupabaseDatasource(this._client);
 
   final SupabaseClient _client;
-  static const _photoBucket = 'purchase-photos';
+  static const _photoBucket = StorageBuckets.purchasePhotos;
 
   @override
   Future<List<String>> uploadPhotos({
     required String userId,
     required List<Uint8List> photos,
   }) async {
-    final urls = <String>[];
+    // Bucket gizli olduğundan DB'de bucket içi göreli path saklanır.
+    final paths = <String>[];
     for (final photo in photos) {
-      final path = '$userId/${DateTime.now().microsecondsSinceEpoch}_${urls.length}.jpg';
+      final path = '$userId/${DateTime.now().microsecondsSinceEpoch}_${paths.length}.jpg';
       await _client.storage.from(_photoBucket).uploadBinary(path, photo);
-      urls.add(_client.storage.from(_photoBucket).getPublicUrl(path));
+      paths.add(path);
     }
-    return urls;
+    return paths;
   }
 
   @override
@@ -110,14 +112,8 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
   }
 
   @override
-  Future<void> deletePhotos(List<String> photoUrls) async {
-    final marker = '/object/public/$_photoBucket/';
-    final paths = <String>[];
-    for (final url in photoUrls) {
-      final index = url.indexOf(marker);
-      if (index == -1) continue;
-      paths.add(Uri.decodeComponent(url.substring(index + marker.length)));
-    }
+  Future<void> deletePhotos(List<String> photoPaths) async {
+    final paths = photoPaths.map((v) => storagePathFromValue(v, _photoBucket)).toList();
     if (paths.isNotEmpty) {
       await _client.storage.from(_photoBucket).remove(paths);
     }

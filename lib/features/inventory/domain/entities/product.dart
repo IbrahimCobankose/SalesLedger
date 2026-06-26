@@ -20,6 +20,7 @@ class Product {
     this.photos = const [],
     this.category,
     this.tags = const [],
+    this.isFavorite = false,
     required this.createdAt,
   });
 
@@ -39,6 +40,7 @@ class Product {
   final List<String> photos;
   final String? category;
   final List<String> tags;
+  final bool isFavorite;
   final DateTime createdAt;
 
   bool get isInStock => stockQuantity > 0;
@@ -65,6 +67,7 @@ class Product {
     List<String>? photos,
     String? category,
     List<String>? tags,
+    bool? isFavorite,
   }) {
     return Product(
       id: id,
@@ -83,6 +86,7 @@ class Product {
       photos: photos ?? this.photos,
       category: category ?? this.category,
       tags: tags ?? this.tags,
+      isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt,
     );
   }

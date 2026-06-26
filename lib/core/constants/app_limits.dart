@@ -37,4 +37,9 @@ abstract class AppLimits {
 
   // ── Şifre ─────────────────────────────────────────────────────────────
   static const minPasswordLength = 6;
+
+  // ── Güvenlik / Oturum ─────────────────────────────────────────────────
+  /// Kullanıcı bu süre boyunca hiç etkileşimde bulunmazsa oturum otomatik
+  /// olarak sonlandırılır ve giriş ekranına yönlendirilir (güvenlik gereği).
+  static const sessionInactivityTimeout = Duration(minutes: 15);
 }

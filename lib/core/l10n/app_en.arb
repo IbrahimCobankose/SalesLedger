@@ -34,6 +34,8 @@
   "navReports": "Reports",
   "navLogout": "Log Out",
 
+  "sessionExpiredMessage": "Your session has timed out for security reasons. Please sign in again.",
+
   "loginWelcome": "Sign in to your account and start managing.",
   "loginEmailLabel": "Email Address",
   "loginEmailHint": "example@company.com",
@@ -84,6 +86,7 @@
   "inventoryAddNew": "Add New Product",
   "inventoryFilterInStock": "In Stock",
   "inventoryFilterOutOfStock": "Out of Stock",
+  "inventoryFilterFavorites": "Favorites",
   "inventorySort": "Sort",
   "inventorySortAlphabetical": "Alphabetical",
   "inventorySortPriceDesc": "Price (High to Low)",

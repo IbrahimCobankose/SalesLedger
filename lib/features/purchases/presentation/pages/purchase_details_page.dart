@@ -1,8 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/confirm_dialog.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
@@ -249,20 +250,21 @@ class _PurchasePhotos extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final url in photos)
+              for (final path in photos)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: url,
+                  child: StorageImage(
+                    bucket: StorageBuckets.purchasePhotos,
+                    path: path,
                     width: 96,
                     height: 96,
                     fit: BoxFit.cover,
-                    placeholder: (context, _) => Container(
+                    placeholder: Container(
                       width: 96,
                       height: 96,
                       color: colorScheme.surfaceContainer,
                     ),
-                    errorWidget: (context, _, _) => Container(
+                    errorWidget: Container(
                       width: 96,
                       height: 96,
                       color: colorScheme.surfaceContainer,

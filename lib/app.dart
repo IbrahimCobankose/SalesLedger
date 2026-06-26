@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/gen/app_localizations.dart';
 import 'package:sales_ledger/core/l10n/locale_provider.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
+import 'package:sales_ledger/core/security/inactivity_watcher.dart';
 import 'package:sales_ledger/core/theme/app_theme.dart';
 
 /// Uygulamanın kökü. Navigasyon yalnızca [GoRouter] ile yapılır
@@ -26,6 +27,8 @@ class App extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+      builder: (context, child) =>
+          InactivityWatcher(child: child ?? const SizedBox.shrink()),
     );
   }
 }

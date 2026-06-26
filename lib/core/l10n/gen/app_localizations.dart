@@ -278,6 +278,12 @@ abstract class AppLocalizations {
   /// **'Log Out'**
   String get navLogout;
 
+  /// No description provided for @sessionExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has timed out for security reasons. Please sign in again.'**
+  String get sessionExpiredMessage;
+
   /// No description provided for @loginWelcome.
   ///
   /// In en, this message translates to:
@@ -547,6 +553,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Out of Stock'**
   String get inventoryFilterOutOfStock;
+
+  /// No description provided for @inventoryFilterFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get inventoryFilterFavorites;
 
   /// No description provided for @inventorySort.
   ///

@@ -1,10 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sales_ledger/core/constants/app_limits.dart';
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/l10n/gen/app_localizations.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
@@ -441,8 +442,9 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
                 _PhotoThumb(
                   colorScheme: colorScheme,
                   onRemove: () => setState(() => _existingPhotoUrls.removeAt(i)),
-                  child: CachedNetworkImage(
-                    imageUrl: _existingPhotoUrls[i],
+                  child: StorageImage(
+                    bucket: StorageBuckets.productPhotos,
+                    path: _existingPhotoUrls[i],
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,

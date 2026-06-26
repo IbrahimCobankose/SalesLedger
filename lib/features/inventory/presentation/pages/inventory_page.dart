@@ -123,6 +123,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               stockFilter: filter.stockFilter,
               onStockFilterChanged: (value) =>
                   ref.read(productFilterProvider.notifier).setStockFilter(value),
+              favoritesOnly: filter.favoritesOnly,
+              onFavoritesToggled: () =>
+                  ref.read(productFilterProvider.notifier).toggleFavoritesOnly(),
               sort: filter.sort,
               onSortChanged: (value) => ref.read(productFilterProvider.notifier).setSort(value),
             ),
@@ -157,6 +160,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                       return ProductCard(
                         product: product,
                         onTap: () => context.push(AppRoutes.productDetails(product.id)),
+                        onToggleFavorite: () => ref
+                            .read(productsProvider.notifier)
+                            .setFavorite(product, !product.isFavorite),
                       );
                     },
                   );

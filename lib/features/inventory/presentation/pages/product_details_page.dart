@@ -1,8 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/storage/storage_buckets.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/widgets/confirm_dialog.dart';
@@ -41,10 +42,19 @@ class ProductDetailsPage extends ConsumerWidget {
     }
   }
 
+  Future<void> _toggleFavorite(WidgetRef ref, Product product) async {
+    await ref
+        .read(productRepositoryProvider)
+        .setFavorite(product.id, !product.isFavorite);
+    ref.invalidate(productDetailsProvider(productId));
+    ref.invalidate(productsProvider);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final productAsync = ref.watch(productDetailsProvider(productId));
+    final product = productAsync.valueOrNull;
     final l10n = context.l10n;
 
     return Scaffold(
@@ -53,6 +63,15 @@ class ProductDetailsPage extends ConsumerWidget {
         title: Text(l10n.productDetailsTitle),
         centerTitle: true,
         actions: [
+          if (product != null)
+            IconButton(
+              icon: Icon(
+                product.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: product.isFavorite ? colorScheme.error : null,
+              ),
+              tooltip: product.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle',
+              onPressed: () => _toggleFavorite(ref, product),
+            ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Düzenle',
@@ -95,7 +114,11 @@ class _ProductDetailsBody extends ConsumerWidget {
       child: AspectRatio(
         aspectRatio: 1,
         child: product.photos.isNotEmpty
-            ? CachedNetworkImage(imageUrl: product.photos.first, fit: BoxFit.cover)
+            ? StorageImage(
+                bucket: StorageBuckets.productPhotos,
+                path: product.photos.first,
+                fit: BoxFit.cover,
+              )
             : Icon(Icons.inventory_2_outlined, size: 48, color: colorScheme.outline),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/features/auth/domain/entities/profile.dart';
 
 /// profil_seçimi taslağındaki profil kartı. Fotoğraf yoksa baş harf
@@ -34,17 +35,14 @@ class ProfileCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(
+              StorageAvatar(
                 radius: 40,
+                path: profile.avatarUrl,
                 backgroundColor: colorScheme.surfaceContainerLow,
-                backgroundImage:
-                    profile.avatarUrl != null ? NetworkImage(profile.avatarUrl!) : null,
-                child: profile.avatarUrl == null
-                    ? Text(
-                        profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
-                        style: textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
-                      )
-                    : null,
+                fallback: Text(
+                  profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+                  style: textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
+                ),
               ),
               const SizedBox(height: 12),
               Flexible(

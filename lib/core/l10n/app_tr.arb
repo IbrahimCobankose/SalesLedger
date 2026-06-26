@@ -33,6 +33,8 @@
   "navReports": "Raporlar",
   "navLogout": "Çıkış Yap",
 
+  "sessionExpiredMessage": "Güvenlik nedeniyle oturumunuz zaman aşımına uğradı. Lütfen tekrar giriş yapın.",
+
   "loginWelcome": "Hesabınıza giriş yapın ve yönetime başlayın.",
   "loginEmailLabel": "E-posta Adresi",
   "loginEmailHint": "ornek@sirket.com",
@@ -82,6 +84,7 @@
   "inventoryAddNew": "Yeni Ürün Ekle",
   "inventoryFilterInStock": "Stokta Var",
   "inventoryFilterOutOfStock": "Stokta Yok",
+  "inventoryFilterFavorites": "Favoriler",
   "inventorySort": "Sırala",
   "inventorySortAlphabetical": "Alfabetik",
   "inventorySortPriceDesc": "Fiyat (Azalan)",

@@ -8,12 +8,16 @@ class FilterChipBar extends StatelessWidget {
     super.key,
     required this.stockFilter,
     required this.onStockFilterChanged,
+    required this.favoritesOnly,
+    required this.onFavoritesToggled,
     required this.sort,
     required this.onSortChanged,
   });
 
   final StockFilter stockFilter;
   final ValueChanged<StockFilter> onStockFilterChanged;
+  final bool favoritesOnly;
+  final VoidCallback onFavoritesToggled;
   final ProductSortOption sort;
   final ValueChanged<ProductSortOption> onSortChanged;
 
@@ -44,6 +48,13 @@ class FilterChipBar extends StatelessWidget {
                   label: l10n.inventoryFilterOutOfStock,
                   selected: stockFilter == StockFilter.outOfStock,
                   onTap: () => onStockFilterChanged(StockFilter.outOfStock),
+                ),
+                const SizedBox(width: 8),
+                _FilterChip(
+                  label: l10n.inventoryFilterFavorites,
+                  selected: favoritesOnly,
+                  onTap: onFavoritesToggled,
+                  icon: favoritesOnly ? Icons.favorite : Icons.favorite_border,
                 ),
               ],
             ),
@@ -79,15 +90,22 @@ class FilterChipBar extends StatelessWidget {
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.icon,
+  });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final foreground = selected ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant;
 
     return Material(
       color: selected ? colorScheme.primaryContainer : colorScheme.surface,
@@ -103,11 +121,18 @@ class _FilterChip extends StatelessWidget {
               color: selected ? colorScheme.primaryContainer : colorScheme.outlineVariant,
             ),
           ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: selected ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant,
-                ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: foreground),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: foreground),
+              ),
+            ],
           ),
         ),
       ),

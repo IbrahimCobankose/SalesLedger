@@ -19,6 +19,7 @@ class ProductModel extends Product {
     super.photos,
     super.category,
     super.tags,
+    super.isFavorite,
     required super.createdAt,
   });
 
@@ -40,6 +41,7 @@ class ProductModel extends Product {
       photos: (json['photos'] as List?)?.cast<String>() ?? const [],
       category: json['category'] as String?,
       tags: (json['tags'] as List?)?.cast<String>() ?? const [],
+      isFavorite: json['is_favorite'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -62,6 +64,7 @@ class ProductModel extends Product {
       photos: product.photos,
       category: product.category,
       tags: product.tags,
+      isFavorite: product.isFavorite,
       createdAt: product.createdAt,
     );
   }

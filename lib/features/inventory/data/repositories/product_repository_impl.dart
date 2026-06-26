@@ -137,6 +137,15 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Future<void> setFavorite(String id, bool value) async {
+    try {
+      await _datasource.setFavorite(id, value);
+    } on PostgrestException {
+      throw const AppException('Favori durumu güncellenemedi. Lütfen tekrar deneyin.');
+    }
+  }
+
+  @override
   Future<List<ProductSaleHistoryItem>> getSaleHistory(String productId) async {
     try {
       return await _datasource.getSaleHistory(productId);

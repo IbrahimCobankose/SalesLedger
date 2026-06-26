@@ -17,7 +17,12 @@
       "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && mkdir -p lib/features/finance/domain/entities lib/features/finance/domain/repositories lib/features/finance/domain/usecases lib/features/finance/data/datasources lib/features/finance/data/repositories lib/features/finance/presentation/providers lib/features/finance/presentation/widgets && find lib/features/finance -type f)",
       "Bash(flutter --version)",
       "Bash(cd \"/c/Users/İbrahim/Desktop/Satış Defteri/sales_ledger\" && sed -i 's/int limit = 5,/int limit = AppLimits.topProductListLimit,/g' lib/features/finance/data/repositories/finance_repository_impl.dart && grep -n \"limit = \" lib/features/finance/data/repositories/finance_repository_impl.dart)",
-      "Bash(flutter gen-l10n *)"
+      "Bash(flutter gen-l10n *)",
+      "Bash([ -s \"$f\" ])",
+      "Bash(exit 0)",
+      "Bash(cat android/.gitignore)",
+      "Bash(grep -nE \"key.properties|\\\\.jks|\\\\.keystore|\\\\.env\" .gitignore android/.gitignore)",
+      "Bash(grep -iE \"\\\\.env$|key.properties|\\\\.jks|\\\\.keystore\")"
     ]
   }
 }

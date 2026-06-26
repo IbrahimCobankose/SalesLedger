@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/widgets/app_shell.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 
@@ -56,16 +57,14 @@ class MainTopBar extends ConsumerWidget implements PreferredSizeWidget {
                   onTap: () => context.go(AppRoutes.profileSelection),
                   child: Tooltip(
                     message: context.l10n.profileSelectionTitle,
-                    child: CircleAvatar(
+                    child: StorageAvatar(
                       radius: 16,
+                      path: profile?.avatarUrl,
                       backgroundColor: colorScheme.surfaceContainerHighest,
-                      backgroundImage: profile?.avatarUrl != null ? NetworkImage(profile!.avatarUrl!) : null,
-                      child: profile?.avatarUrl == null
-                          ? Text(
-                              profile?.name.isNotEmpty == true ? profile!.name[0].toUpperCase() : '?',
-                              style: const TextStyle(fontSize: 12),
-                            )
-                          : null,
+                      fallback: Text(
+                        profile?.name.isNotEmpty == true ? profile!.name[0].toUpperCase() : '?',
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                   ),
                 ),

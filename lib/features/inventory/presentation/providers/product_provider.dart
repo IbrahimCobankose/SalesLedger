@@ -55,6 +55,9 @@ class ProductFilterNotifier extends Notifier<ProductQuery> {
   void setStockFilter(StockFilter value) =>
       state = state.copyWith(stockFilter: value).resetToFirstPage();
 
+  void toggleFavoritesOnly() =>
+      state = state.copyWith(favoritesOnly: !state.favoritesOnly).resetToFirstPage();
+
   void setSort(ProductSortOption value) => state = state.copyWith(sort: value).resetToFirstPage();
 }
 
@@ -100,6 +103,24 @@ class ProductsNotifier extends AutoDisposeAsyncNotifier<List<Product>> {
       _hasReachedEnd = products.length < query.pageSize;
       return products;
     });
+  }
+
+  /// Ürünün favori durumunu değiştirir. Listeyi iyimser (optimistic) günceller;
+  /// "Yalnızca favoriler" filtresi açıkken favoriden çıkarılan ürün listeden düşer.
+  Future<void> setFavorite(Product product, bool value) async {
+    final current = state.valueOrNull;
+    await ref.read(productRepositoryProvider).setFavorite(product.id, value);
+    ref.invalidate(productDetailsProvider(product.id));
+    if (current == null) return;
+
+    if (ref.read(productFilterProvider).favoritesOnly && !value) {
+      state = AsyncData(current.where((p) => p.id != product.id).toList());
+    } else {
+      state = AsyncData([
+        for (final p in current)
+          p.id == product.id ? p.copyWith(isFavorite: value) : p,
+      ]);
+    }
   }
 }
 

@@ -17,6 +17,9 @@ abstract class ProductDatasource {
 
   Future<void> deleteProduct(String id);
 
+  /// Ürünün favori işaretini günceller (diğer alanlara dokunmaz).
+  Future<void> setFavorite(String id, bool value);
+
   Future<List<String>> uploadPhotos({
     required String userId,
     required List<Uint8List> photos,

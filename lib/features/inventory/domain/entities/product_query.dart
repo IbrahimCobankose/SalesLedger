@@ -18,6 +18,7 @@ class ProductQuery {
     this.search = '',
     this.category,
     this.stockFilter = StockFilter.all,
+    this.favoritesOnly = false,
     this.sort = ProductSortOption.alphabetical,
     this.page = 0,
     this.pageSize = AppLimits.defaultPageSize,
@@ -26,6 +27,9 @@ class ProductQuery {
   final String search;
   final String? category;
   final StockFilter stockFilter;
+
+  /// Yalnızca favori işaretli ürünleri göster (stok filtresinden bağımsız).
+  final bool favoritesOnly;
   final ProductSortOption sort;
   final int page;
   final int pageSize;
@@ -34,6 +38,7 @@ class ProductQuery {
     String? search,
     String? category,
     StockFilter? stockFilter,
+    bool? favoritesOnly,
     ProductSortOption? sort,
     int? page,
   }) {
@@ -41,6 +46,7 @@ class ProductQuery {
       search: search ?? this.search,
       category: category ?? this.category,
       stockFilter: stockFilter ?? this.stockFilter,
+      favoritesOnly: favoritesOnly ?? this.favoritesOnly,
       sort: sort ?? this.sort,
       page: page ?? this.page,
       pageSize: pageSize,

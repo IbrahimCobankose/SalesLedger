@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
+import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 
@@ -103,15 +104,13 @@ class _SideNavigationContent extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
+                  StorageAvatar(
                     radius: 24,
+                    path: profile?.avatarUrl,
                     backgroundColor: colorScheme.surfaceContainerHighest,
-                    backgroundImage: profile?.avatarUrl != null
-                        ? NetworkImage(profile!.avatarUrl!)
-                        : null,
-                    child: profile?.avatarUrl == null
-                        ? Text(profile?.name.isNotEmpty == true ? profile!.name[0].toUpperCase() : '?')
-                        : null,
+                    fallback: Text(
+                      profile?.name.isNotEmpty == true ? profile!.name[0].toUpperCase() : '?',
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
