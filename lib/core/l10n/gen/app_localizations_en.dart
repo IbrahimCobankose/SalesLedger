@@ -27,6 +27,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonAll => 'All';
 
   @override
+  String get commonAllProfiles => 'All Profiles';
+
+  @override
+  String get commonProfile => 'Profile';
+
+  @override
+  String commonProfileLine(Object name) {
+    return 'Profile: $name';
+  }
+
+  @override
   String get commonRetry => 'Retry';
 
   @override
@@ -247,6 +258,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryFilterFavorites => 'Favorites';
+
+  @override
+  String get inventoryFavoriteFailed => 'Could not update favorite.';
 
   @override
   String get inventorySort => 'Sort';

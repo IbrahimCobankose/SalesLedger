@@ -7,6 +7,7 @@ import 'package:sales_ledger/core/utils/debouncer.dart';
 import 'package:sales_ledger/core/utils/excel_exporter.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/core/widgets/main_top_bar.dart';
+import 'package:sales_ledger/core/widgets/profile_filter_dropdown.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase_query.dart';
 import 'package:sales_ledger/features/purchases/presentation/providers/purchase_provider.dart';
 import 'package:sales_ledger/features/purchases/presentation/widgets/purchase_card.dart';
@@ -102,6 +103,14 @@ class _PurchasesPageState extends ConsumerState<PurchasesPage> {
               onChanged: (value) => _searchDebouncer.run(
                 () => ref.read(purchaseFilterProvider.notifier).setSearch(value),
               ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: ProfileFilterDropdown(
+              selectedProfileId: filter.profileId,
+              onChanged: (id) =>
+                  ref.read(purchaseFilterProvider.notifier).setProfileFilter(id),
             ),
           ),
           Padding(

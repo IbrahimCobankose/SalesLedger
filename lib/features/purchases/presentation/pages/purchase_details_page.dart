@@ -107,6 +107,22 @@ class _PurchaseDetailsBody extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(purchase.displaySupplierName, style: textTheme.headlineMedium),
+          if (purchase.profileName != null && purchase.profileName!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.person_outline, size: 16, color: colorScheme.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    purchase.profileName!,
+                    style: textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

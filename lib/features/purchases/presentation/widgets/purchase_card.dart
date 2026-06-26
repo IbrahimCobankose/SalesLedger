@@ -56,6 +56,23 @@ class PurchaseCard extends StatelessWidget {
                           formatTurkishDate(purchase.purchaseDate),
                           style: textTheme.bodySmall,
                         ),
+                        if (purchase.profileName != null && purchase.profileName!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(Icons.person_outline, size: 12, color: colorScheme.outline),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  purchase.profileName!,
+                                  style: textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

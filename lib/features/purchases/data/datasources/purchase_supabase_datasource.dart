@@ -33,7 +33,7 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
   Future<List<PurchaseModel>> getPurchases(String userId, PurchaseQuery query) async {
     var builder = _client
         .from('purchases')
-        .select('*, purchase_items(count)')
+        .select('*, purchase_items(count), profiles(name)')
         .eq('user_id', userId);
 
     if (query.search.trim().isNotEmpty) {
@@ -44,6 +44,10 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
     final dbStatuses = query.statusFilter.dbStatuses;
     if (dbStatuses != null) {
       builder = builder.inFilter('status', dbStatuses.map((status) => status.dbValue).toList());
+    }
+
+    if (query.profileId != null) {
+      builder = builder.eq('profile_id', query.profileId!);
     }
 
     final from = query.page * query.pageSize;
@@ -57,7 +61,7 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
   Future<PurchaseModel> getPurchaseById(String id) async {
     final row = await _client
         .from('purchases')
-        .select('*, purchase_items(count)')
+        .select('*, purchase_items(count), profiles(name)')
         .eq('id', id)
         .single();
     return PurchaseModel.fromJson(row);
@@ -107,6 +111,8 @@ class PurchaseSupabaseDatasource implements PurchaseDatasource {
       totalAmount: inserted.totalAmount,
       itemCount: items.length,
       photos: inserted.photos,
+      profileId: inserted.profileId,
+      profileName: purchase.profileName,
       createdAt: inserted.createdAt,
     );
   }

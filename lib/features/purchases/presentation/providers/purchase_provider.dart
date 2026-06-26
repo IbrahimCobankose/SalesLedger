@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
 import 'package:sales_ledger/features/auth/data/datasources/auth_supabase_datasource.dart';
+import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 import 'package:sales_ledger/features/purchases/data/datasources/purchase_supabase_datasource.dart';
 import 'package:sales_ledger/features/purchases/data/repositories/purchase_repository_impl.dart';
 import 'package:sales_ledger/features/purchases/domain/entities/purchase.dart';
@@ -48,6 +49,9 @@ class PurchaseFilterNotifier extends Notifier<PurchaseQuery> {
 
   void setStatusFilter(PurchaseStatusFilter value) =>
       state = state.copyWith(statusFilter: value).resetToFirstPage();
+
+  void setProfileFilter(String? profileId) =>
+      state = state.copyWith(profileId: profileId).resetToFirstPage();
 }
 
 final purchaseFilterProvider = NotifierProvider<PurchaseFilterNotifier, PurchaseQuery>(
@@ -130,6 +134,7 @@ class AddPurchaseController extends AsyncNotifier<void> {
         paymentType: paymentType,
         notes: notes,
         photos: photos,
+        profileId: ref.read(selectedProfileProvider)?.id,
       );
       state = const AsyncData(null);
       ref.invalidate(purchasesProvider);

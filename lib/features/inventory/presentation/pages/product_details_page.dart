@@ -42,12 +42,23 @@ class ProductDetailsPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _toggleFavorite(WidgetRef ref, Product product) async {
-    await ref
-        .read(productRepositoryProvider)
-        .setFavorite(product.id, !product.isFavorite);
-    ref.invalidate(productDetailsProvider(productId));
-    ref.invalidate(productsProvider);
+  Future<void> _toggleFavorite(BuildContext context, WidgetRef ref, Product product) async {
+    final l10n = context.l10n;
+    try {
+      await ref
+          .read(productRepositoryProvider)
+          .setFavorite(product.id, !product.isFavorite);
+      ref.invalidate(productDetailsProvider(productId));
+      ref.invalidate(productsProvider);
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackbar.show(
+          context,
+          message: e is AppException ? e.message : l10n.inventoryFavoriteFailed,
+          isError: true,
+        );
+      }
+    }
   }
 
   @override
@@ -70,7 +81,7 @@ class ProductDetailsPage extends ConsumerWidget {
                 color: product.isFavorite ? colorScheme.error : null,
               ),
               tooltip: product.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle',
-              onPressed: () => _toggleFavorite(ref, product),
+              onPressed: () => _toggleFavorite(context, ref, product),
             ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
@@ -133,6 +144,23 @@ class _ProductDetailsBody extends ConsumerWidget {
           '₺${product.salePrice.toStringAsFixed(2)}',
           style: textTheme.displayLarge?.copyWith(color: colorScheme.primary),
         ),
+        if (product.profileName != null && product.profileName!.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.person_outline, size: 16, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  l10n.commonProfileLine(product.profileName!),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 16),
         Row(
           children: [

@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sales_ledger/core/l10n/l10n_extensions.dart';
 import 'package:sales_ledger/core/router/app_router.dart';
+import 'package:sales_ledger/core/utils/app_exception.dart';
 import 'package:sales_ledger/core/utils/debouncer.dart';
 import 'package:sales_ledger/core/utils/excel_exporter.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/core/widgets/main_top_bar.dart';
+import 'package:sales_ledger/core/widgets/profile_filter_dropdown.dart';
+import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
 import 'package:sales_ledger/features/inventory/presentation/providers/product_provider.dart';
 import 'package:sales_ledger/features/inventory/presentation/widgets/filter_chip_bar.dart';
 import 'package:sales_ledger/features/inventory/presentation/widgets/product_card.dart';
@@ -43,6 +46,20 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       ref.read(productsProvider.notifier).loadMore();
+    }
+  }
+
+  Future<void> _toggleFavorite(Product product) async {
+    try {
+      await ref.read(productsProvider.notifier).setFavorite(product, !product.isFavorite);
+    } catch (e) {
+      if (mounted) {
+        CustomSnackbar.show(
+          context,
+          message: e is AppException ? e.message : context.l10n.inventoryFavoriteFailed,
+          isError: true,
+        );
+      }
     }
   }
 
@@ -118,6 +135,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               ),
             ),
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: ProfileFilterDropdown(
+              selectedProfileId: filter.profileId,
+              onChanged: (id) =>
+                  ref.read(productFilterProvider.notifier).setProfileFilter(id),
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: FilterChipBar(
               stockFilter: filter.stockFilter,
@@ -150,7 +175,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 480,
-                      mainAxisExtent: 116,
+                      mainAxisExtent: 134,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                     ),
@@ -160,9 +185,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                       return ProductCard(
                         product: product,
                         onTap: () => context.push(AppRoutes.productDetails(product.id)),
-                        onToggleFavorite: () => ref
-                            .read(productsProvider.notifier)
-                            .setFavorite(product, !product.isFavorite),
+                        onToggleFavorite: () => _toggleFavorite(product),
                       );
                     },
                   );

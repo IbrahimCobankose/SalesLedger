@@ -122,6 +122,22 @@ class _SaleDetailsBody extends ConsumerWidget {
                                 ],
                               ),
                             ],
+                            if (sale.profileName != null && sale.profileName!.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(Icons.person_outline, size: 16, color: colorScheme.onSurfaceVariant),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      sale.profileName!,
+                                      style: textTheme.bodySmall,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),

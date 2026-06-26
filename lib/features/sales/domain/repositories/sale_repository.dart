@@ -23,6 +23,7 @@ abstract class SaleRepository {
     CargoStatus status = CargoStatus.packaging,
     String? trackingNumber,
     String? notes,
+    String? profileId,
   });
 
   /// Mevcut bir satışı ve kalemlerini günceller.

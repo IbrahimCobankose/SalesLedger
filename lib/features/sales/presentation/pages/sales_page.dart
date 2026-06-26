@@ -8,6 +8,7 @@ import 'package:sales_ledger/core/utils/debouncer.dart';
 import 'package:sales_ledger/core/utils/excel_exporter.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
 import 'package:sales_ledger/core/widgets/main_top_bar.dart';
+import 'package:sales_ledger/core/widgets/profile_filter_dropdown.dart';
 import 'package:sales_ledger/features/sales/domain/entities/sale_query.dart';
 import 'package:sales_ledger/features/sales/presentation/providers/sale_provider.dart';
 import 'package:sales_ledger/features/sales/presentation/widgets/sale_card.dart';
@@ -139,6 +140,14 @@ class _SalesPageState extends ConsumerState<SalesPage> {
               ),
             ),
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: ProfileFilterDropdown(
+              selectedProfileId: filter.profileId,
+              onChanged: (id) =>
+                  ref.read(saleFilterProvider.notifier).setProfileFilter(id),
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
@@ -198,7 +207,7 @@ class _SalesPageState extends ConsumerState<SalesPage> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
                     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 420,
-                      mainAxisExtent: 156,
+                      mainAxisExtent: 176,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                     ),

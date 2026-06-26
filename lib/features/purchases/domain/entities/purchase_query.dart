@@ -27,23 +27,31 @@ class PurchaseQuery {
   const PurchaseQuery({
     this.search = '',
     this.statusFilter = PurchaseStatusFilter.all,
+    this.profileId,
     this.page = 0,
     this.pageSize = AppLimits.defaultPageSize,
   });
 
   final String search;
   final PurchaseStatusFilter statusFilter;
+
+  /// Belirli bir profile ait alışları göster. `null` ise tüm profiller.
+  final String? profileId;
   final int page;
   final int pageSize;
+
+  static const _unset = Object();
 
   PurchaseQuery copyWith({
     String? search,
     PurchaseStatusFilter? statusFilter,
+    Object? profileId = _unset,
     int? page,
   }) {
     return PurchaseQuery(
       search: search ?? this.search,
       statusFilter: statusFilter ?? this.statusFilter,
+      profileId: identical(profileId, _unset) ? this.profileId : profileId as String?,
       page: page ?? this.page,
       pageSize: pageSize,
     );

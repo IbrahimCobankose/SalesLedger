@@ -22,6 +22,7 @@ abstract class PurchaseRepository {
     String? paymentType,
     String? notes,
     List<Uint8List> photos = const [],
+    String? profileId,
   });
 
   Future<void> deletePurchase(String id);

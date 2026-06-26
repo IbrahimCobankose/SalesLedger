@@ -15,7 +15,8 @@ class ProductSupabaseDatasource implements ProductDatasource {
 
   @override
   Future<List<ProductModel>> getProducts(String userId, ProductQuery query) async {
-    var builder = _client.from('products').select().eq('user_id', userId);
+    var builder =
+        _client.from('products').select('*, profiles(name)').eq('user_id', userId);
 
     if (query.search.trim().isNotEmpty) {
       final term = query.search.trim();
@@ -34,6 +35,9 @@ class ProductSupabaseDatasource implements ProductDatasource {
     }
     if (query.favoritesOnly) {
       builder = builder.eq('is_favorite', true);
+    }
+    if (query.profileId != null) {
+      builder = builder.eq('profile_id', query.profileId!);
     }
 
     final from = query.page * query.pageSize;
@@ -57,7 +61,8 @@ class ProductSupabaseDatasource implements ProductDatasource {
 
   @override
   Future<ProductModel> getProductById(String id) async {
-    final row = await _client.from('products').select().eq('id', id).single();
+    final row =
+        await _client.from('products').select('*, profiles(name)').eq('id', id).single();
     return ProductModel.fromJson(row);
   }
 

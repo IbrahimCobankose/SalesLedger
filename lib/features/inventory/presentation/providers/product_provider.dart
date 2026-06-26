@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
 import 'package:sales_ledger/features/auth/data/datasources/auth_supabase_datasource.dart';
+import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 import 'package:sales_ledger/features/inventory/data/datasources/product_supabase_datasource.dart';
 import 'package:sales_ledger/features/inventory/data/repositories/product_repository_impl.dart';
 import 'package:sales_ledger/features/inventory/domain/entities/product.dart';
@@ -57,6 +58,9 @@ class ProductFilterNotifier extends Notifier<ProductQuery> {
 
   void toggleFavoritesOnly() =>
       state = state.copyWith(favoritesOnly: !state.favoritesOnly).resetToFirstPage();
+
+  void setProfileFilter(String? profileId) =>
+      state = state.copyWith(profileId: profileId).resetToFirstPage();
 
   void setSort(ProductSortOption value) => state = state.copyWith(sort: value).resetToFirstPage();
 }
@@ -174,6 +178,7 @@ class AddProductController extends AsyncNotifier<void> {
         description: description,
         notes: notes,
         tags: tags,
+        profileId: ref.read(selectedProfileProvider)?.id,
       );
       state = const AsyncData(null);
       ref.invalidate(productsProvider);

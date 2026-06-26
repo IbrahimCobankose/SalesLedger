@@ -26,6 +26,7 @@ abstract class ProductRepository {
     String? description,
     String? notes,
     List<String> tags = const [],
+    String? profileId,
   });
 
   /// [product.photos] korunan mevcut fotoğraf URL'lerini içerir; [newPhotos]

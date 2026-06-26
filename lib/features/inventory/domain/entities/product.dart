@@ -21,6 +21,8 @@ class Product {
     this.category,
     this.tags = const [],
     this.isFavorite = false,
+    this.profileId,
+    this.profileName,
     required this.createdAt,
   });
 
@@ -41,6 +43,11 @@ class Product {
   final String? category;
   final List<String> tags;
   final bool isFavorite;
+
+  /// Bu ürünün hangi profil üzerinden eklendiği. Gösterim için [profileName]
+  /// listede `profiles(name)` gömülü kaynağından doldurulur.
+  final String? profileId;
+  final String? profileName;
   final DateTime createdAt;
 
   bool get isInStock => stockQuantity > 0;
@@ -68,6 +75,8 @@ class Product {
     String? category,
     List<String>? tags,
     bool? isFavorite,
+    String? profileId,
+    String? profileName,
   }) {
     return Product(
       id: id,
@@ -87,6 +96,8 @@ class Product {
       category: category ?? this.category,
       tags: tags ?? this.tags,
       isFavorite: isFavorite ?? this.isFavorite,
+      profileId: profileId ?? this.profileId,
+      profileName: profileName ?? this.profileName,
       createdAt: createdAt,
     );
   }

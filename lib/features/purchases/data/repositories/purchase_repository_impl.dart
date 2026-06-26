@@ -52,6 +52,7 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
     String? paymentType,
     String? notes,
     List<Uint8List> photos = const [],
+    String? profileId,
   }) async {
     try {
       final userId = _authDatasource.currentUserId;
@@ -70,6 +71,7 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
         paymentType: paymentType,
         totalAmount: totalAmount,
         photos: photoUrls,
+        profileId: profileId,
         createdAt: DateTime.now(),
       );
 

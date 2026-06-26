@@ -19,6 +19,7 @@ class ProductQuery {
     this.category,
     this.stockFilter = StockFilter.all,
     this.favoritesOnly = false,
+    this.profileId,
     this.sort = ProductSortOption.alphabetical,
     this.page = 0,
     this.pageSize = AppLimits.defaultPageSize,
@@ -30,15 +31,22 @@ class ProductQuery {
 
   /// Yalnızca favori işaretli ürünleri göster (stok filtresinden bağımsız).
   final bool favoritesOnly;
+
+  /// Belirli bir profile ait ürünleri göster. `null` ise tüm profiller.
+  final String? profileId;
   final ProductSortOption sort;
   final int page;
   final int pageSize;
+
+  // profileId'nin `null`'a da ayarlanabilmesi için (Tüm Profiller) sentinel.
+  static const _unset = Object();
 
   ProductQuery copyWith({
     String? search,
     String? category,
     StockFilter? stockFilter,
     bool? favoritesOnly,
+    Object? profileId = _unset,
     ProductSortOption? sort,
     int? page,
   }) {
@@ -47,6 +55,7 @@ class ProductQuery {
       category: category ?? this.category,
       stockFilter: stockFilter ?? this.stockFilter,
       favoritesOnly: favoritesOnly ?? this.favoritesOnly,
+      profileId: identical(profileId, _unset) ? this.profileId : profileId as String?,
       sort: sort ?? this.sort,
       page: page ?? this.page,
       pageSize: pageSize,

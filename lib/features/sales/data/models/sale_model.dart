@@ -17,6 +17,8 @@ class SaleModel extends Sale {
     super.totalAmount,
     super.itemCount,
     super.firstItemName,
+    super.profileId,
+    super.profileName,
     required super.createdAt,
   });
 
@@ -38,6 +40,12 @@ class SaleModel extends Sale {
       firstItemName = embeddedItems.first['name'] as String?;
     }
 
+    String? profileName;
+    final profile = json['profiles'];
+    if (profile is Map<String, dynamic>) {
+      profileName = profile['name'] as String?;
+    }
+
     return SaleModel(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -52,11 +60,13 @@ class SaleModel extends Sale {
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0,
       itemCount: itemCount,
       firstItemName: firstItemName,
+      profileId: json['profile_id'] as String?,
+      profileName: profileName,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
 
-  Map<String, dynamic> toInsertJson() {
+  Map<String, dynamic> _baseJson() {
     return {
       'user_id': userId,
       'customer_id': customerId,
@@ -69,4 +79,10 @@ class SaleModel extends Sale {
       'total_amount': totalAmount,
     };
   }
+
+  /// Oluştururken `profile_id` de yazılır.
+  Map<String, dynamic> toInsertJson() => {..._baseJson(), 'profile_id': profileId};
+
+  /// Güncellerken `profile_id` yazılmaz; mevcut profil bağı korunur.
+  Map<String, dynamic> toUpdateJson() => _baseJson();
 }

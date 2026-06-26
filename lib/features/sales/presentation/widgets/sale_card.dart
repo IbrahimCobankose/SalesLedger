@@ -57,6 +57,23 @@ class SaleCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(dateLabel, style: textTheme.bodySmall),
+                    if (sale.profileName != null && sale.profileName!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(Icons.person_outline, size: 12, color: colorScheme.outline),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              sale.profileName!,
+                              style: textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

@@ -52,6 +52,7 @@ class SaleRepositoryImpl implements SaleRepository {
     CargoStatus status = CargoStatus.packaging,
     String? trackingNumber,
     String? notes,
+    String? profileId,
   }) async {
     try {
       final userId = _authDatasource.currentUserId;
@@ -73,6 +74,7 @@ class SaleRepositoryImpl implements SaleRepository {
         status: status,
         trackingNumber: trackingNumber,
         totalAmount: totalAmount,
+        profileId: profileId,
         createdAt: DateTime.now(),
       );
 

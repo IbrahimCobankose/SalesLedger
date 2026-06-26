@@ -27,6 +27,17 @@ class AppLocalizationsTr extends AppLocalizations {
   String get commonAll => 'Tümü';
 
   @override
+  String get commonAllProfiles => 'Tüm Profiller';
+
+  @override
+  String get commonProfile => 'Profil';
+
+  @override
+  String commonProfileLine(Object name) {
+    return 'Profil: $name';
+  }
+
+  @override
   String get commonRetry => 'Tekrar dene';
 
   @override
@@ -245,6 +256,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get inventoryFilterFavorites => 'Favoriler';
+
+  @override
+  String get inventoryFavoriteFailed => 'Favori durumu güncellenemedi.';
 
   @override
   String get inventorySort => 'Sırala';

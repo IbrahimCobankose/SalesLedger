@@ -16,6 +16,7 @@ class AddPurchaseUseCase {
     String? paymentType,
     String? notes,
     List<Uint8List> photos = const [],
+    String? profileId,
   }) {
     return _repository.addPurchase(
       supplierName: supplierName,
@@ -24,6 +25,7 @@ class AddPurchaseUseCase {
       paymentType: paymentType,
       notes: notes,
       photos: photos,
+      profileId: profileId,
     );
   }
 }

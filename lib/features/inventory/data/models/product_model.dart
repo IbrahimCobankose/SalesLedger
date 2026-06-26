@@ -20,10 +20,19 @@ class ProductModel extends Product {
     super.category,
     super.tags,
     super.isFavorite,
+    super.profileId,
+    super.profileName,
     required super.createdAt,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    // Listede `profiles(name)` gömülü kaynağı, ürünün ait olduğu profil adını
+    // ekstra sorgu yapmadan getirir.
+    String? profileName;
+    final profile = json['profiles'];
+    if (profile is Map<String, dynamic>) {
+      profileName = profile['name'] as String?;
+    }
     return ProductModel(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -42,6 +51,8 @@ class ProductModel extends Product {
       category: json['category'] as String?,
       tags: (json['tags'] as List?)?.cast<String>() ?? const [],
       isFavorite: json['is_favorite'] as bool? ?? false,
+      profileId: json['profile_id'] as String?,
+      profileName: profileName,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -65,6 +76,8 @@ class ProductModel extends Product {
       category: product.category,
       tags: product.tags,
       isFavorite: product.isFavorite,
+      profileId: product.profileId,
+      profileName: product.profileName,
       createdAt: product.createdAt,
     );
   }
@@ -90,9 +103,12 @@ class ProductModel extends Product {
   }
 
   /// Eklerken `id`/`sold_count` Supabase tarafında üretilir; gönderilmez.
+  /// `profile_id` yalnızca oluştururken yazılır (düzenlemede [toJson] içine
+  /// konmaz ki mevcut profil bağı korunur).
   Map<String, dynamic> toInsertJson() {
     final json = toJson();
     json.remove('id');
+    json['profile_id'] = profileId;
     return json;
   }
 }

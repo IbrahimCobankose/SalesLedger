@@ -50,6 +50,7 @@ class SaleQuery {
   const SaleQuery({
     this.search = '',
     this.statusFilter = CargoStatusFilter.all,
+    this.profileId,
     this.sort = SaleSortOption.dateDescending,
     this.page = 0,
     this.pageSize = AppLimits.defaultPageSize,
@@ -57,19 +58,26 @@ class SaleQuery {
 
   final String search;
   final CargoStatusFilter statusFilter;
+
+  /// Belirli bir profile ait satışları göster. `null` ise tüm profiller.
+  final String? profileId;
   final SaleSortOption sort;
   final int page;
   final int pageSize;
 
+  static const _unset = Object();
+
   SaleQuery copyWith({
     String? search,
     CargoStatusFilter? statusFilter,
+    Object? profileId = _unset,
     SaleSortOption? sort,
     int? page,
   }) {
     return SaleQuery(
       search: search ?? this.search,
       statusFilter: statusFilter ?? this.statusFilter,
+      profileId: identical(profileId, _unset) ? this.profileId : profileId as String?,
       sort: sort ?? this.sort,
       page: page ?? this.page,
       pageSize: pageSize,

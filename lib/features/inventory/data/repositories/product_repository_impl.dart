@@ -49,6 +49,7 @@ class ProductRepositoryImpl implements ProductRepository {
     String? description,
     String? notes,
     List<String> tags = const [],
+    String? profileId,
   }) async {
     try {
       final userId = _authDatasource.currentUserId;
@@ -70,6 +71,7 @@ class ProductRepositoryImpl implements ProductRepository {
         photos: photoUrls,
         category: category,
         tags: tags,
+        profileId: profileId,
         createdAt: DateTime.now(),
       );
 

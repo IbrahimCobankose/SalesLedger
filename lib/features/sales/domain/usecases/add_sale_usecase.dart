@@ -16,6 +16,7 @@ class AddSaleUseCase {
     CargoStatus status = CargoStatus.packaging,
     String? trackingNumber,
     String? notes,
+    String? profileId,
   }) {
     return _repository.addSale(
       customerName: customerName,
@@ -25,6 +26,7 @@ class AddSaleUseCase {
       status: status,
       trackingNumber: trackingNumber,
       notes: notes,
+      profileId: profileId,
     );
   }
 }

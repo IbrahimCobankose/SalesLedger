@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
 import 'package:sales_ledger/features/auth/data/datasources/auth_supabase_datasource.dart';
+import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 import 'package:sales_ledger/features/sales/data/datasources/sale_supabase_datasource.dart';
 import 'package:sales_ledger/features/sales/data/repositories/sale_repository_impl.dart';
 import 'package:sales_ledger/features/sales/domain/entities/cargo_status.dart';
@@ -51,6 +52,9 @@ class SaleFilterNotifier extends Notifier<SaleQuery> {
 
   void setStatusFilter(CargoStatusFilter value) =>
       state = state.copyWith(statusFilter: value).resetToFirstPage();
+
+  void setProfileFilter(String? profileId) =>
+      state = state.copyWith(profileId: profileId).resetToFirstPage();
 
   void setSort(SaleSortOption value) => state = state.copyWith(sort: value).resetToFirstPage();
 }
@@ -136,6 +140,7 @@ class AddSaleController extends AsyncNotifier<void> {
         status: status,
         trackingNumber: trackingNumber,
         notes: notes,
+        profileId: ref.read(selectedProfileProvider)?.id,
       );
       state = const AsyncData(null);
       ref.invalidate(salesProvider);

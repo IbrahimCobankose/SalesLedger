@@ -22,6 +22,7 @@ class AddProductUseCase {
     String? description,
     String? notes,
     List<String> tags = const [],
+    String? profileId,
   }) {
     return _repository.addProduct(
       name: name,
@@ -37,6 +38,7 @@ class AddProductUseCase {
       description: description,
       notes: notes,
       tags: tags,
+      profileId: profileId,
     );
   }
 }

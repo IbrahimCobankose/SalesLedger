@@ -17,6 +17,8 @@ class Sale {
     this.totalAmount = 0,
     this.itemCount = 0,
     this.firstItemName,
+    this.profileId,
+    this.profileName,
     required this.createdAt,
   });
 
@@ -33,6 +35,11 @@ class Sale {
   final double totalAmount;
   final int itemCount;
   final String? firstItemName;
+
+  /// Satışın hangi profil üzerinden yapıldığı. [profileName] listede
+  /// `profiles(name)` gömülü kaynağından doldurulur.
+  final String? profileId;
+  final String? profileName;
   final DateTime createdAt;
 
   bool get isCanceled => status == CargoStatus.canceled;

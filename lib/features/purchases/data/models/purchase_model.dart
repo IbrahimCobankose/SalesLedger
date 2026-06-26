@@ -17,6 +17,8 @@ class PurchaseModel extends Purchase {
     super.totalAmount,
     super.itemCount,
     super.photos,
+    super.profileId,
+    super.profileName,
     required super.createdAt,
   });
 
@@ -27,6 +29,12 @@ class PurchaseModel extends Purchase {
     final embeddedItems = json['purchase_items'];
     if (embeddedItems is List && embeddedItems.isNotEmpty) {
       itemCount = (embeddedItems.first['count'] as num?)?.toInt() ?? 0;
+    }
+
+    String? profileName;
+    final profile = json['profiles'];
+    if (profile is Map<String, dynamic>) {
+      profileName = profile['name'] as String?;
     }
 
     return PurchaseModel(
@@ -43,6 +51,8 @@ class PurchaseModel extends Purchase {
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0,
       itemCount: itemCount,
       photos: (json['photos'] as List?)?.cast<String>() ?? const [],
+      profileId: json['profile_id'] as String?,
+      profileName: profileName,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -50,6 +60,7 @@ class PurchaseModel extends Purchase {
   Map<String, dynamic> toInsertJson() {
     return {
       'user_id': userId,
+      'profile_id': profileId,
       'supplier_id': supplierId,
       'supplier_name': supplierName,
       'purchase_date': purchaseDate.toIso8601String(),

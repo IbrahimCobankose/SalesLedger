@@ -134,6 +134,24 @@ abstract class AppLocalizations {
   /// **'All'**
   String get commonAll;
 
+  /// No description provided for @commonAllProfiles.
+  ///
+  /// In en, this message translates to:
+  /// **'All Profiles'**
+  String get commonAllProfiles;
+
+  /// No description provided for @commonProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get commonProfile;
+
+  /// No description provided for @commonProfileLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile: {name}'**
+  String commonProfileLine(Object name);
+
   /// No description provided for @commonRetry.
   ///
   /// In en, this message translates to:
@@ -559,6 +577,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Favorites'**
   String get inventoryFilterFavorites;
+
+  /// No description provided for @inventoryFavoriteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update favorite.'**
+  String get inventoryFavoriteFailed;
 
   /// No description provided for @inventorySort.
   ///

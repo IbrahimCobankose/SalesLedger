@@ -17,6 +17,8 @@ class Purchase {
     this.totalAmount = 0,
     this.itemCount = 0,
     this.photos = const [],
+    this.profileId,
+    this.profileName,
     required this.createdAt,
   });
 
@@ -33,6 +35,11 @@ class Purchase {
   final double totalAmount;
   final int itemCount;
   final List<String> photos;
+
+  /// Alışın hangi profil üzerinden yapıldığı. [profileName] listede
+  /// `profiles(name)` gömülü kaynağından doldurulur.
+  final String? profileId;
+  final String? profileName;
   final DateTime createdAt;
 
   String get displaySupplierName =>

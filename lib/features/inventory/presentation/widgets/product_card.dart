@@ -100,6 +100,23 @@ class ProductCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
+                if (product.profileName != null && product.profileName!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.person_outline, size: 12, color: colorScheme.outline),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          product.profileName!,
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

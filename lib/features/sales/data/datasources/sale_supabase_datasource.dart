@@ -10,7 +10,7 @@ class SaleSupabaseDatasource implements SaleDatasource {
 
   final SupabaseClient _client;
 
-  static const _selectWithRelations = '*, customers(name), sale_items(name)';
+  static const _selectWithRelations = '*, customers(name), sale_items(name), profiles(name)';
 
   @override
   Future<List<SaleModel>> getSales(String userId, SaleQuery query) async {
@@ -24,6 +24,10 @@ class SaleSupabaseDatasource implements SaleDatasource {
     final status = query.statusFilter.dbStatus;
     if (status != null) {
       builder = builder.eq('status', status.dbValue);
+    }
+
+    if (query.profileId != null) {
+      builder = builder.eq('profile_id', query.profileId!);
     }
 
     final from = query.page * query.pageSize;
@@ -107,6 +111,8 @@ class SaleSupabaseDatasource implements SaleDatasource {
       totalAmount: inserted.totalAmount,
       itemCount: items.length,
       firstItemName: items.isNotEmpty ? items.first.name : null,
+      profileId: inserted.profileId,
+      profileName: sale.profileName,
       createdAt: inserted.createdAt,
     );
   }
@@ -117,7 +123,7 @@ class SaleSupabaseDatasource implements SaleDatasource {
     required SaleModel sale,
     required List<SaleItemDraft> items,
   }) async {
-    await _client.from('sales').update(sale.toInsertJson()).eq('id', saleId);
+    await _client.from('sales').update(sale.toUpdateJson()).eq('id', saleId);
 
     // Kalemleri tamamen yenile: eskileri sil, yenilerini ekle.
     await _client.from('sale_items').delete().eq('sale_id', saleId);
