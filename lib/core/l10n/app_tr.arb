@@ -50,6 +50,13 @@
   "settingsProfileUpdateFailed": "Profil güncellenemedi. Lütfen tekrar deneyin.",
   "settingsEmailLabel": "E-posta",
   "settingsAppVersion": "Uygulama Sürümü",
+  "settingsDeleteAccountSection": "Hesabı Sil",
+  "settingsDeleteAccountDescription": "Hesabınızı ve tüm verilerinizi (ürünler, satışlar, alımlar, müşteriler, profiller ve fotoğraflar) kalıcı olarak siler. Bu işlem geri alınamaz.",
+  "settingsDeleteAccountButton": "Hesabımı Sil",
+  "settingsDeleteAccountConfirmTitle": "Hesabınızı silmek istiyor musunuz?",
+  "settingsDeleteAccountConfirmMessage": "Tüm verileriniz kalıcı olarak silinecek ve bu işlem geri alınamayacak. Devam etmek istiyor musunuz?",
+  "settingsDeleteAccountConfirm": "Evet, Sil",
+  "settingsDeleteAccountFailed": "Hesap silinemedi. Lütfen tekrar deneyin.",
 
   "inventoryFavoriteAdd": "Favorilere ekle",
   "inventoryFavoriteRemove": "Favorilerden çıkar",

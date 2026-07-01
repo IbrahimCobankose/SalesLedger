@@ -5,6 +5,7 @@ import 'package:sales_ledger/features/auth/data/datasources/auth_supabase_dataso
 import 'package:sales_ledger/features/auth/data/datasources/profile_supabase_datasource.dart';
 import 'package:sales_ledger/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sales_ledger/features/auth/domain/repositories/auth_repository.dart';
+import 'package:sales_ledger/features/auth/domain/usecases/delete_account_usecase.dart';
 import 'package:sales_ledger/features/auth/domain/usecases/send_password_reset_usecase.dart';
 import 'package:sales_ledger/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:sales_ledger/features/auth/domain/usecases/sign_out_usecase.dart';
@@ -35,6 +36,10 @@ final signOutUseCaseProvider = Provider(
 
 final sendPasswordResetUseCaseProvider = Provider(
   (ref) => SendPasswordResetUseCase(ref.watch(authRepositoryProvider)),
+);
+
+final deleteAccountUseCaseProvider = Provider(
+  (ref) => DeleteAccountUseCase(ref.watch(authRepositoryProvider)),
 );
 
 /// E-posta doğrulama akışında "Tekrar Gönder" için kullanılır.
@@ -99,6 +104,23 @@ class AuthController extends AsyncNotifier<void> {
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
+    }
+  }
+
+  /// Hesabı ve tüm verisini kalıcı olarak siler. Başarılıysa oturum kapanır;
+  /// router otomatik olarak giriş ekranına yönlendirir. [true] dönerse başarılı.
+  Future<bool> deleteAccount() async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(deleteAccountUseCaseProvider)();
+      // signOut ile aynı yerel temizlik.
+      ref.read(selectedProfileProvider.notifier).clear();
+      SignedUrlCache.clear();
+      state = const AsyncData(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      return false;
     }
   }
 }

@@ -69,6 +69,22 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await _authDatasource.deleteAccount();
+    } on PostgrestException {
+      throw const AppException('Hesap silinemedi. Lütfen tekrar deneyin.');
+    } catch (_) {
+      throw const AppException('Hesap silinemedi. Lütfen tekrar deneyin.');
+    }
+    // Veri sunucuda silindi; yerel oturumu kapat. Token artık geçersiz
+    // olabileceğinden çıkış hatasını yok sayıyoruz.
+    try {
+      await _authDatasource.signOut();
+    } catch (_) {}
+  }
+
   String _mapAuthError(AuthException e) {
     final message = e.message.toLowerCase();
     // Supabase mesaj bazlı ayırt etme (status code'lar sürüme göre değişebilir)

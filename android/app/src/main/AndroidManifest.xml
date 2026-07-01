@@ -1,9 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- image_picker için galeri erişim izni -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <!-- Android 12 ve altı için -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"/>
+    <!-- Supabase ile ağ haberleşmesi için zorunlu. Bu izin yalnızca debug/profile
+         manifestlerindeydi; release (Play Store) derlemesinde de gerekli. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Galeri izinleri (READ_MEDIA_IMAGES / READ_EXTERNAL_STORAGE) bilerek
+         KALDIRILDI. image_picker, foto seçimi için Android sistem Foto
+         Seçici'sini (Photo Picker) kullanır; bu, tek seferlik/ara sıra erişim
+         için Google Play politikasının önerdiği yöntemdir ve geniş medya izni
+         gerektirmez. Böylece "Fotoğraf ve video izinleri" beyanı da gerekmez. -->
     <application
         android:label="Satış Defteri"
         android:name="${applicationName}"

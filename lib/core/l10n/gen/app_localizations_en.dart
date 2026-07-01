@@ -162,6 +162,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppVersion => 'App Version';
 
   @override
+  String get settingsDeleteAccountSection => 'Delete Account';
+
+  @override
+  String get settingsDeleteAccountDescription =>
+      'Permanently deletes your account and all your data (products, sales, purchases, customers, profiles and photos). This action cannot be undone.';
+
+  @override
+  String get settingsDeleteAccountButton => 'Delete My Account';
+
+  @override
+  String get settingsDeleteAccountConfirmTitle => 'Delete your account?';
+
+  @override
+  String get settingsDeleteAccountConfirmMessage =>
+      'All your data will be permanently deleted and this action cannot be undone. Do you want to continue?';
+
+  @override
+  String get settingsDeleteAccountConfirm => 'Yes, Delete';
+
+  @override
+  String get settingsDeleteAccountFailed =>
+      'Could not delete account. Please try again.';
+
+  @override
   String get inventoryFavoriteAdd => 'Add to favorites';
 
   @override

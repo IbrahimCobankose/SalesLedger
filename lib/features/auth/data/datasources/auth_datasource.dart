@@ -19,5 +19,9 @@ abstract class AuthDatasource {
   /// Kayıt doğrulama e-postasını yeniden gönderir.
   Future<void> resendVerificationEmail({required String email});
 
+  /// Giriş yapmış kullanıcının hesabını ve tüm verisini kalıcı olarak siler
+  /// (sunucudaki `delete_current_user` fonksiyonunu çağırır).
+  Future<void> deleteAccount();
+
   String get currentUserId;
 }

@@ -386,6 +386,48 @@ abstract class AppLocalizations {
   /// **'App Version'**
   String get settingsAppVersion;
 
+  /// No description provided for @settingsDeleteAccountSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get settingsDeleteAccountSection;
+
+  /// No description provided for @settingsDeleteAccountDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently deletes your account and all your data (products, sales, purchases, customers, profiles and photos). This action cannot be undone.'**
+  String get settingsDeleteAccountDescription;
+
+  /// No description provided for @settingsDeleteAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete My Account'**
+  String get settingsDeleteAccountButton;
+
+  /// No description provided for @settingsDeleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get settingsDeleteAccountConfirmTitle;
+
+  /// No description provided for @settingsDeleteAccountConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All your data will be permanently deleted and this action cannot be undone. Do you want to continue?'**
+  String get settingsDeleteAccountConfirmMessage;
+
+  /// No description provided for @settingsDeleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, Delete'**
+  String get settingsDeleteAccountConfirm;
+
+  /// No description provided for @settingsDeleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete account. Please try again.'**
+  String get settingsDeleteAccountFailed;
+
   /// No description provided for @inventoryFavoriteAdd.
   ///
   /// In en, this message translates to:

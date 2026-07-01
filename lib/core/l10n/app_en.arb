@@ -53,6 +53,13 @@
   "settingsProfileUpdateFailed": "Could not update profile. Please try again.",
   "settingsEmailLabel": "Email",
   "settingsAppVersion": "App Version",
+  "settingsDeleteAccountSection": "Delete Account",
+  "settingsDeleteAccountDescription": "Permanently deletes your account and all your data (products, sales, purchases, customers, profiles and photos). This action cannot be undone.",
+  "settingsDeleteAccountButton": "Delete My Account",
+  "settingsDeleteAccountConfirmTitle": "Delete your account?",
+  "settingsDeleteAccountConfirmMessage": "All your data will be permanently deleted and this action cannot be undone. Do you want to continue?",
+  "settingsDeleteAccountConfirm": "Yes, Delete",
+  "settingsDeleteAccountFailed": "Could not delete account. Please try again.",
 
   "inventoryFavoriteAdd": "Add to favorites",
   "inventoryFavoriteRemove": "Remove from favorites",

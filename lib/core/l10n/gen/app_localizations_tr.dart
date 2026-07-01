@@ -163,6 +163,31 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsAppVersion => 'Uygulama Sürümü';
 
   @override
+  String get settingsDeleteAccountSection => 'Hesabı Sil';
+
+  @override
+  String get settingsDeleteAccountDescription =>
+      'Hesabınızı ve tüm verilerinizi (ürünler, satışlar, alımlar, müşteriler, profiller ve fotoğraflar) kalıcı olarak siler. Bu işlem geri alınamaz.';
+
+  @override
+  String get settingsDeleteAccountButton => 'Hesabımı Sil';
+
+  @override
+  String get settingsDeleteAccountConfirmTitle =>
+      'Hesabınızı silmek istiyor musunuz?';
+
+  @override
+  String get settingsDeleteAccountConfirmMessage =>
+      'Tüm verileriniz kalıcı olarak silinecek ve bu işlem geri alınamayacak. Devam etmek istiyor musunuz?';
+
+  @override
+  String get settingsDeleteAccountConfirm => 'Evet, Sil';
+
+  @override
+  String get settingsDeleteAccountFailed =>
+      'Hesap silinemedi. Lütfen tekrar deneyin.';
+
+  @override
   String get inventoryFavoriteAdd => 'Favorilere ekle';
 
   @override

@@ -9,8 +9,10 @@ import 'package:sales_ledger/core/l10n/locale_provider.dart';
 import 'package:sales_ledger/core/network/supabase_client.dart';
 import 'package:sales_ledger/core/storage/storage_image.dart';
 import 'package:sales_ledger/core/utils/app_exception.dart';
+import 'package:sales_ledger/core/widgets/confirm_dialog.dart';
 import 'package:sales_ledger/core/widgets/custom_button.dart';
 import 'package:sales_ledger/core/widgets/custom_snackbar.dart';
+import 'package:sales_ledger/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sales_ledger/features/auth/presentation/providers/profile_provider.dart';
 
 /// Ayarlar ekranı: aktif profilin adını/fotoğrafını düzenleme, dil seçimi
@@ -31,6 +33,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool _isSaving = false;
   bool _isPickingPhoto = false;
   bool _isBackingUp = false;
+  bool _isDeleting = false;
   bool _initialized = false;
 
   @override
@@ -124,6 +127,32 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
     } finally {
       if (mounted) setState(() => _isBackingUp = false);
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    if (_isDeleting) return;
+    final l10n = context.l10n;
+
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: l10n.settingsDeleteAccountConfirmTitle,
+      message: l10n.settingsDeleteAccountConfirmMessage,
+      confirmLabel: l10n.settingsDeleteAccountConfirm,
+    );
+    if (!confirmed) return;
+
+    setState(() => _isDeleting = true);
+    final success = await ref.read(authControllerProvider.notifier).deleteAccount();
+    // Başarılıysa oturum kapanır ve router giriş ekranına yönlendirir; bu
+    // ekran ağaçtan kaldırılacağı için ek bir gezinme yapmaya gerek yoktur.
+    if (!success && mounted) {
+      setState(() => _isDeleting = false);
+      CustomSnackbar.show(
+        context,
+        message: l10n.settingsDeleteAccountFailed,
+        isError: true,
+      );
     }
   }
 
@@ -257,6 +286,38 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       _InfoRow(label: l10n.settingsEmailLabel, value: email),
                       const Divider(height: 24),
                       _InfoRow(label: l10n.settingsAppVersion, value: _appVersion),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // --- Hesabı sil (geri alınamaz) ---
+                  _Section(
+                    title: l10n.settingsDeleteAccountSection,
+                    icon: Icons.delete_forever_outlined,
+                    children: [
+                      Text(
+                        l10n.settingsDeleteAccountDescription,
+                        style: textTheme.bodyMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isDeleting ? null : _deleteAccount,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.error,
+                            foregroundColor: colorScheme.onError,
+                          ),
+                          child: _isDeleting
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                                )
+                              : Text(l10n.settingsDeleteAccountButton),
+                        ),
+                      ),
                     ],
                   ),
                 ],

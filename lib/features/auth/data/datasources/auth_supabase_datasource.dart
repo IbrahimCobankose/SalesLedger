@@ -43,6 +43,12 @@ class AuthSupabaseDatasource implements AuthDatasource {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    // Sunucu fonksiyonu auth.uid()'in tüm verisini ve auth kaydını siler.
+    await _client.rpc('delete_current_user');
+  }
+
+  @override
   String get currentUserId {
     final id = _client.auth.currentUser?.id;
     if (id == null) {

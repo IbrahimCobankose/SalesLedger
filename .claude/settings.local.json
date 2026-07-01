@@ -22,7 +22,22 @@
       "Bash(exit 0)",
       "Bash(cat android/.gitignore)",
       "Bash(grep -nE \"key.properties|\\\\.jks|\\\\.keystore|\\\\.env\" .gitignore android/.gitignore)",
-      "Bash(grep -iE \"\\\\.env$|key.properties|\\\\.jks|\\\\.keystore\")"
+      "Bash(grep -iE \"\\\\.env$|key.properties|\\\\.jks|\\\\.keystore\")",
+      "Bash(git ls-files *)",
+      "Bash(xargs grep -l \"policy\")",
+      "Bash(grep -rn \"print\\(\\\\|debugPrint\\\\|TODO\\\\|FIXME\\\\|http://\\\\|console.log\" lib/)",
+      "Bash(flutter build *)",
+      "Bash(flutter devices *)",
+      "Bash(adb devices *)",
+      "Bash(flutter emulators *)",
+      "mcp__visualize__read_me",
+      "Bash(gh auth *)",
+      "Bash(grep -iE \"\\\\.env$|key.properties|\\\\.jks$|\\\\.keystore$|secret|credential\")",
+      "Bash(git check-ignore *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://satis-defteri-gizlilik.netlify.app/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://satis-defteri-gizlilik.netlify.app/privacy_policy.html)",
+      "Bash(curl -s https://satis-defteri-gizlilik.netlify.app/)",
+      "Bash(curl -s https://satis-defteri-gizlilik.netlify.app/privacy_policy.html)"
     ]
   }
 }

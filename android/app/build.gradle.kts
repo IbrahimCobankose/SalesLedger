@@ -47,7 +47,10 @@ android {
             if (keystorePropertiesFile.exists()) {
                 keyAlias = keystoreProperties["keyAlias"] as String?
                 keyPassword = keystoreProperties["keyPassword"] as String?
-                storeFile = (keystoreProperties["storeFile"] as String?)?.let { file(it) }
+                // storeFile yolu key.properties'te android/ klasörüne göre verilir
+                // (ör. "upload-keystore.jks"). file() app modülüne (android/app)
+                // göre çözümlediği için rootProject.file() ile android/ tabanlı çözüyoruz.
+                storeFile = (keystoreProperties["storeFile"] as String?)?.let { rootProject.file(it) }
                 storePassword = keystoreProperties["storePassword"] as String?
             }
         }
@@ -60,6 +63,14 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+            // R8 ile kod küçültme + kullanılmayan kaynakların atılması.
+            // AAB boyutunu düşürür; Play Store için önerilir.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

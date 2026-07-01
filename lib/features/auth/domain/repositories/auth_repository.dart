@@ -22,4 +22,7 @@ abstract class AuthRepository {
   Future<void> signOut();
 
   Future<void> sendPasswordResetEmail({required String email});
+
+  /// Hesabı ve tüm verisini kalıcı olarak siler, ardından yerel oturumu kapatır.
+  Future<void> deleteAccount();
 }

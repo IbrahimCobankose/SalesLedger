@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satış Defteri — Play Store Görsel Stüdyosu</title>
+<style>
+  :root{
+    --bg:#0A0F14; --panel:#12181F; --panel2:#1B2027; --line:#2A323C;
+    --brand:#0096FF; --brandDeep:#0061A7; --brandLight:#A1C9FF; --text:#E7ECF3; --muted:#93A0AE;
+  }
+  *{box-sizing:border-box;font-family:'Segoe UI',Roboto,system-ui,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--text)}
+  header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0;font-weight:600}
+  header .sub{color:var(--muted);font-size:13px}
+  .toolbar{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+  button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);
+    padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;transition:.15s}
+  button:hover{border-color:var(--brand)}
+  button.primary{background:var(--brandDeep);border-color:var(--brandDeep)}
+  button.primary:hover{background:var(--brand)}
+  .controls{padding:16px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+  .controls label{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+  select,input[type=text]{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:7px 10px;font-size:13px}
+  input[type=range]{accent-color:var(--brand)}
+  .dropzone{margin:18px 24px;padding:22px;border:2px dashed var(--line);border-radius:14px;text-align:center;
+    color:var(--muted);font-size:14px;background:var(--panel)}
+  .dropzone.drag{border-color:var(--brand);color:var(--brandLight);background:#0e1924}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;padding:0 24px 60px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .card .head{padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+  .idx{width:26px;height:26px;border-radius:50%;background:var(--brandDeep);color:#fff;font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .card .head .name{font-size:13px;font-weight:600;color:var(--brandLight)}
+  .canvas-wrap{background:#05080b;display:flex;align-items:center;justify-content:center;min-height:300px;padding:14px}
+  canvas{width:100%;max-width:270px;height:auto;border-radius:10px;display:block}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:40px 10px;line-height:1.6}
+  .fields{padding:12px 14px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line)}
+  .fields input{width:100%}
+  .fields .row{display:flex;gap:8px}
+  .fields .row button{flex:1;padding:8px}
+  .hint{color:var(--muted);font-size:12px;padding:0 24px 10px}
+  .file-pick{font-size:12px;color:var(--brandLight);cursor:pointer;text-decoration:underline}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Satış Defteri · Play Store Görsel Stüdyosu</h1>
+  <span class="sub">Her görsel tam 1080 × 1920 px PNG olarak dışa aktarılır</span>
+  <div class="toolbar">
+    <button id="themeBtn">Arka plan: Koyu</button>
+    <button class="primary" id="downloadAll">Tümünü indir (PNG)</button>
+  </div>
+</header>
+
+<div class="controls">
+  <label>Telefon çubuklarını kırp
+    <input type="checkbox" id="cropBars" checked>
+  </label>
+  <label>Üst kırpma <input type="range" id="cropTop" min="0" max="160" value="70" step="2"> <span id="cropTopVal">70</span>px</label>
+  <label>Alt kırpma <input type="range" id="cropBot" min="0" max="200" value="150" step="2"> <span id="cropBotVal">150</span>px</label>
+  <label>Üst yazı <input type="checkbox" id="showText" checked></label>
+</div>
+
+<div class="dropzone" id="dropzone">
+  5 ekran görüntünü buraya sürükle-bırak (hepsini birden bırakabilirsin) — sıralarına göre aşağıdaki kartlara yerleşir.
+  <br>Ya da her kartta "dosya seç" ile tek tek yükle.
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const SLIDES = [
+  { key:'01_envanter', name:'Envanter (ürünler)',  title:'Ürünlerini fotoğraflı yönet',   subtitle:'Stok, favori ve fiyat tek ekranda' },
+  { key:'02_finans',   name:'Finans (grafik)',     title:'Kâr-zararını anında gör',        subtitle:'Aylık ve yıllık gelir-gider analizi' },
+  { key:'03_satislar', name:'Satışlar',            title:'Satışlarını uçtan uca takip et', subtitle:'Kargo durumu ve müşteri bilgisiyle' },
+  { key:'04_kasa',     name:'Kasa hareketleri',    title:'Kasan her zaman dengede',        subtitle:'Tüm giriş ve çıkışlar elinin altında' },
+  { key:'05_alimlar',  name:'Alımlar',             title:'Alımlarını ve giderlerini kaydet', subtitle:'Tedarikçi ve ödeme türüyle' },
+];
+
+const W = 1080, H = 1920;
+const THEMES = {
+  dark:   { name:'Koyu',     a:'#0A0F14', b:'#0C1722', c:'#06090D', glow:'rgba(0,150,255,0.16)' },
+  navy:   { name:'Lacivert', a:'#06122A', b:'#0A2348', c:'#03060F', glow:'rgba(0,150,255,0.22)' },
+  brand:  { name:'Mavi',     a:'#00284A', b:'#0061A7', c:'#001A33', glow:'rgba(120,200,255,0.20)' },
+};
+const themeKeys = Object.keys(THEMES);
+let themeIdx = 0;
+const state = SLIDES.map(s => ({...s, img:null}));
+
+const grid = document.getElementById('grid');
+function buildCards(){
+  grid.innerHTML='';
+  state.forEach((s,i)=>{
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`
+      <div class="head"><div class="idx">${i+1}</div><div class="name">${s.name}</div></div>
+      <div class="canvas-wrap" id="wrap${i}">
+        <div class="empty">Görsel yok<br><label class="file-pick">dosya seç<input type="file" accept="image/*" data-i="${i}"></label></div>
+      </div>
+      <div class="fields">
+        <input type="text" value="${s.title}" data-title="${i}" placeholder="Başlık">
+        <input type="text" value="${s.subtitle}" data-sub="${i}" placeholder="Alt başlık">
+        <div class="row">
+          <button data-up="${i}" title="Yukarı taşı">▲</button>
+          <button data-down="${i}" title="Aşağı taşı">▼</button>
+          <button data-dl="${i}">Bu görseli indir</button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+  bindCards();
+  state.forEach((s,i)=>{ if(s.img) renderPreview(i); });
+}
+
+function bindCards(){
+  grid.querySelectorAll('input[type=file]').forEach(inp=>{
+    inp.onchange=e=>{ const i=+inp.dataset.i; loadFile(e.target.files[0], i); };
+  });
+  grid.querySelectorAll('input[data-title]').forEach(inp=>{
+    inp.oninput=()=>{ state[+inp.dataset.title].title=inp.value; renderPreview(+inp.dataset.title); };
+  });
+  grid.querySelectorAll('input[data-sub]').forEach(inp=>{
+    inp.oninput=()=>{ state[+inp.dataset.sub].subtitle=inp.value; renderPreview(+inp.dataset.sub); };
+  });
+  grid.querySelectorAll('button[data-dl]').forEach(b=> b.onclick=()=>downloadOne(+b.dataset.dl));
+  grid.querySelectorAll('button[data-up]').forEach(b=> b.onclick=()=>move(+b.dataset.up,-1));
+  grid.querySelectorAll('button[data-down]').forEach(b=> b.onclick=()=>move(+b.dataset.down,1));
+}
+
+function move(i,dir){
+  const j=i+dir; if(j<0||j>=state.length) return;
+  [state[i],state[j]]=[state[j],state[i]]; buildCards();
+}
+
+function loadFile(file,i){
+  if(!file) return;
+  const img=new Image();
+  img.onload=()=>{ state[i].img=img; renderPreview(i); };
+  img.src=URL.createObjectURL(file);
+}
+
+function drawSlide(ctx,img,title,subtitle){
+  const th=THEMES[themeKeys[themeIdx]];
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,th.a); g.addColorStop(0.55,th.b); g.addColorStop(1,th.c);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  const rg=ctx.createRadialGradient(W/2,150,0,W/2,150,820);
+  rg.addColorStop(0,th.glow); rg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+
+  const showText=document.getElementById('showText').checked;
+  let deviceTop = showText ? 470 : 150;
+
+  if(showText){
+    ctx.textAlign='center';
+    ctx.fillStyle='#A1C9FF';
+    ctx.font='600 26px Segoe UI';
+    ctx.fillText('SATIŞ DEFTERİ', W/2, 120);
+
+    ctx.fillStyle='#FFFFFF';
+    ctx.font='700 60px Segoe UI';
+    const lines=wrap(ctx,title,940,2);
+    const subY=410, lh=72;
+    let startY = subY - 64 - (lines.length-1)*lh;
+    lines.forEach((ln,k)=> ctx.fillText(ln, W/2, startY + k*lh));
+
+    ctx.fillStyle='#A8B6C6';
+    ctx.font='400 34px Segoe UI';
+    ctx.fillText(subtitle, W/2, subY);
+  }
+
+  if(!img) return;
+
+  const cropBars=document.getElementById('cropBars').checked;
+  const ct = cropBars ? +document.getElementById('cropTop').value : 0;
+  const cb = cropBars ? +document.getElementById('cropBot').value : 0;
+  const sx=0, sy=ct, sw=img.width, sh=img.height-ct-cb;
+
+  const devW=900, devX=(W-devW)/2;
+  const scale=devW/sw;
+  const drawH=sh*scale;
+  const radius=46;
+
+  ctx.save();
+  roundedTopRect(ctx, devX-6, deviceTop-6, devW+12, H-deviceTop+12, radius+6);
+  ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  roundedTopRect(ctx, devX, deviceTop, devW, H-deviceTop, radius);
+  ctx.clip();
+  ctx.drawImage(img, sx, sy, sw, sh, devX, deviceTop, devW, drawH);
+  ctx.restore();
+
+  ctx.save();
+  roundedTopRect(ctx, devX, deviceTop, devW, H-deviceTop, radius);
+  ctx.lineWidth=2; ctx.strokeStyle='rgba(255,255,255,0.10)'; ctx.stroke();
+  ctx.restore();
+}
+
+function roundedTopRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h);
+  ctx.lineTo(x,y+h);
+  ctx.lineTo(x,y+r);
+  ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+function wrap(ctx,text,maxW,maxLines){
+  const words=text.split(' '); const lines=[]; let cur='';
+  for(const w of words){
+    const t=cur?cur+' '+w:w;
+    if(ctx.measureText(t).width>maxW && cur){ lines.push(cur); cur=w; }
+    else cur=t;
+  }
+  if(cur) lines.push(cur);
+  if(lines.length>maxLines){ const kept=lines.slice(0,maxLines); kept[maxLines-1]+='…'; return kept; }
+  return lines;
+}
+
+function renderPreview(i){
+  const s=state[i];
+  const wrapEl=document.getElementById('wrap'+i);
+  let cv=wrapEl.querySelector('canvas');
+  if(!cv){ wrapEl.innerHTML=''; cv=document.createElement('canvas'); cv.width=W; cv.height=H; wrapEl.appendChild(cv);
+    const lbl=document.createElement('label'); lbl.className='file-pick'; lbl.style.marginTop='8px'; lbl.textContent='değiştir';
+    const fi=document.createElement('input'); fi.type='file'; fi.accept='image/*'; fi.dataset.i=i;
+    fi.onchange=e=>loadFile(e.target.files[0],i); lbl.appendChild(fi); wrapEl.appendChild(lbl);
+  }
+  const ctx=cv.getContext('2d');
+  drawSlide(ctx,s.img,s.title,s.subtitle);
+}
+
+function renderFull(i){
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  drawSlide(cv.getContext('2d'),state[i].img,state[i].title,state[i].subtitle);
+  return cv;
+}
+
+function downloadOne(i){
+  if(!state[i].img){ alert('Önce '+(i+1)+'. karta görsel yükle.'); return; }
+  renderFull(i).toBlob(b=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(b);
+    a.download=String(i+1).padStart(2,'0')+'_satis_defteri.png';
+    a.click();
+  },'image/png');
+}
+
+document.getElementById('downloadAll').onclick=async()=>{
+  const ready=state.filter(s=>s.img).length;
+  if(!ready){ alert('Henüz görsel yüklemedin.'); return; }
+  for(let i=0;i<state.length;i++){
+    if(!state[i].img) continue;
+    await new Promise(res=> renderFull(i).toBlob(b=>{
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(b);
+      a.download=String(i+1).padStart(2,'0')+'_satis_defteri.png';
+      a.click(); setTimeout(res,400);
+    },'image/png'));
+  }
+};
+
+document.getElementById('themeBtn').onclick=()=>{
+  themeIdx=(themeIdx+1)%themeKeys.length;
+  document.getElementById('themeBtn').textContent='Arka plan: '+THEMES[themeKeys[themeIdx]].name;
+  state.forEach((s,i)=>renderPreview(i));
+};
+
+['cropBars','cropTop','cropBot','showText'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    document.getElementById('cropTopVal').textContent=document.getElementById('cropTop').value;
+    document.getElementById('cropBotVal').textContent=document.getElementById('cropBot').value;
+    state.forEach((s,i)=>renderPreview(i));
+  });
+});
+
+const dz=document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const files=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'))
+    .sort((a,b)=>a.name.localeCompare(b.name,'tr',{numeric:true}));
+  files.forEach((f,k)=>{ if(k<state.length) loadFile(f,k); });
+});
+
+buildCards();
+</script>
+</body>
+</html>
